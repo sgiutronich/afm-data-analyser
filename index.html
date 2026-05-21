@@ -9,7 +9,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
 
@@ -751,7 +750,7 @@
 
 
 
-  /* ── LOGIN ── */
+  /* LOGIN */
   #loginScreen {
     position:fixed;inset:0;z-index:10000;
     background:linear-gradient(145deg,#001F52 0%,#003380 50%,#004A9A 100%);
@@ -783,16 +782,6 @@
   .login-btn:disabled{opacity:0.6;cursor:not-allowed;transform:none}
   .login-footer{margin-top:24px;text-align:center;font-size:10px;color:#9AADC8}
   @media(max-width:480px){.login-card{padding:28px 20px;margin:16px}}
-
-
-  .drop-badge {
-    background: var(--gwf-blue-light); color: var(--gwf-blue);
-    border: 1px solid var(--gwf-blue-mid); border-radius: 20px;
-    padding: 3px 10px; font-size: 10px; font-weight: 600;
-    white-space: nowrap;
-  }
-  .drop-badge.loaded { background: var(--gwf-green-light); color: var(--gwf-green); border-color: #A5D6A7; }
-  .drop-badge.error  { background: var(--gwf-red-light);   color: var(--gwf-red);   border-color: #FFCDD2; }
 
 </style>
 </head>
@@ -920,14 +909,13 @@
             <input type="file" id="multiFileInput" multiple accept=".csv,.txt,.json"
                    style="display:none" onchange="handleMultiSelect(this)">
             <div class="drop-icon">📂</div>
-            <div class="drop-title" data-i18n="drop_title">Dateien laden</div>
-            <div class="drop-sub" data-i18n="drop_sub">Alle Dateien auf einmal hierher ziehen oder klicken</div>
-            <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px">
-              <span class="drop-badge">📊 Datendatei <span style="opacity:0.6">*-data_*.csv</span></span>
-              <span class="drop-badge">🩺 Diagnosedatei <span style="opacity:0.6">*-diag_*.csv</span></span>
-              <span class="drop-badge">⚙ Parameterdatei <span style="opacity:0.6">*_params.txt</span></span>
+            <div class="drop-title">Dateien laden</div>
+            <div class="drop-sub">Alle Dateien gleichzeitig hierher ziehen oder klicken</div>
+            <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px">
+              <span style="background:var(--gwf-blue-light);color:var(--gwf-blue);border:1px solid #C5D8F0;border-radius:20px;padding:3px 10px;font-size:10px;font-weight:600">📊 Datendatei <span style="opacity:0.6">*-data_*.csv</span></span>
+              <span style="background:var(--gwf-blue-light);color:var(--gwf-blue);border:1px solid #C5D8F0;border-radius:20px;padding:3px 10px;font-size:10px;font-weight:600">🩺 Diagnosedatei <span style="opacity:0.6">*-diag_*.csv</span></span>
+              <span style="background:var(--gwf-blue-light);color:var(--gwf-blue);border:1px solid #C5D8F0;border-radius:20px;padding:3px 10px;font-size:10px;font-weight:600">⚙ Parameterdatei <span style="opacity:0.6">*_params.txt</span></span>
             </div>
-            <!-- Status badges shown after loading -->
             <div id="loadedBadges" style="display:none;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:10px"></div>
           </div>
         </div>
@@ -1463,8 +1451,7 @@ const TRANSLATIONS = {
     res_all:'5 min', res_hourly:'Stündlich', res_daily:'Täglich',
     tab_summary:'Zusammenfassung', tab_params_rec:'Parameterempfehlungen',
     tab_service:'Serviceempfehlungen', tab_environment:'Umgebungseinflüsse', tab_errors:'Fehlercodes',
-    drop_title:'Dateien laden',
-    drop_all_hint:'Alle Dateien auf einmal hierher ziehen oder klicken', drop_sub:'Datei hierher ziehen oder klicken zum Auswählen',
+    drop_title:'CSV-Datei laden', drop_sub:'Datei hierher ziehen oder klicken zum Auswählen',
     loading:'Daten werden verarbeitet…',
     col_main:'Hauptparameter', col_paths:'Pfad-Geschwindigkeiten', col_snr:'SNR / Gain',
     col_timing:'Transit Time', col_all:'Alle Spalten',
@@ -1612,8 +1599,7 @@ const TRANSLATIONS = {
     res_all:'5 min', res_hourly:'Hourly', res_daily:'Daily',
     tab_summary:'Summary', tab_params_rec:'Parameter Recommendations',
     tab_service:'Service Recommendations', tab_environment:'Environmental Influences', tab_errors:'Error Codes',
-    drop_title:'Load Files',
-    drop_all_hint:'Drag all files here at once or click to select', drop_sub:'Drag file here or click to select',
+    drop_title:'Load CSV File', drop_sub:'Drag file here or click to select',
     loading:'Processing data…',
     col_main:'Main Parameters', col_paths:'Path Velocities', col_snr:'SNR / Gain',
     col_timing:'Transit Time', col_all:'All Columns',
@@ -1950,7 +1936,7 @@ function detectAndNormalise(rawText) {
 
 // ===================== FILE LOADING =====================
 function loadFile(input) {
-  const file = (input instanceof File) ? input : input.files[0];
+  const file = input.files[0];
   if (!file) return;
   state.filename = file.name;
   showLoading(true);
@@ -1961,9 +1947,12 @@ function loadFile(input) {
   };
   reader.onload = e => {
     try {
+      // Auto-detect and normalise format before parsing
       const normalised = detectAndNormalise(e.target.result);
+      // normalised is now an object {text, format, converted} or a plain string (legacy)
       const normText   = typeof normalised === 'string' ? normalised : normalised.text;
       state.fileFormat = typeof normalised === 'string' ? 'monthly' : normalised.format;
+
       const result = Papa.parse(normText, {
         header: true,
         skipEmptyLines: true,
@@ -1982,7 +1971,7 @@ function loadFile(input) {
     } catch(err) {
       showLoading(false);
       console.error('Fehler beim Verarbeiten:', err);
-      alert('Fehler beim Verarbeiten der Datei:\n' + err.message);
+      alert('Fehler beim Verarbeiten der Datei:\n' + err.message + '\n\nDetails in der Browser-Konsole (F12).');
     }
   };
   reader.readAsText(file, 'UTF-8');
@@ -1997,98 +1986,6 @@ function handleDrop(ev) {
     dt.items.add(file);
     document.getElementById('fileInput').files = dt.files;
     loadFile(document.getElementById('fileInput'));
-  }
-}
-
-// ── Multi-file drop: auto-detects data / diag / params ──────────────────
-function classifyFile(file) {
-  const n = file.name.toLowerCase();
-  if (n.endsWith('_params.txt') || (n.endsWith('.txt') && !n.endsWith('_params.txt'))) return 'params';
-  if (n.includes('-diag_') || n.includes('_diag_') || n.includes('-diag.')) return 'diag';
-  if (n.endsWith('.csv')) return 'data';
-  if (n.endsWith('.json')) return 'params';
-  return 'unknown';
-}
-
-function updateLoadedBadge(type, filename, ok) {
-  const container = document.getElementById('loadedBadges');
-  container.style.display = 'flex';
-  // Remove existing badge of this type
-  const existing = container.querySelector(`[data-type="${type}"]`);
-  if (existing) existing.remove();
-  const icons = { data:'📊', diag:'🩺', params:'⚙', unknown:'❓' };
-  const labels = { data:bi('Datendatei','Data file'), diag:bi('Diagnose','Diagnostics'), params:bi('Parameter','Parameters'), unknown:'?' };
-  const badge = document.createElement('span');
-  badge.className = 'drop-badge ' + (ok ? 'loaded' : 'error');
-  badge.dataset.type = type;
-  badge.innerHTML = `${icons[type]} ${labels[type]}: <strong>${filename}</strong>`;
-  container.appendChild(badge);
-}
-
-function handleMultiSelect(input) {
-  processMultiFiles(Array.from(input.files));
-}
-
-function handleMultiDrop(ev) {
-  ev.preventDefault();
-  document.getElementById('dropZone').classList.remove('dragover');
-  processMultiFiles(Array.from(ev.dataTransfer.files));
-}
-
-function processMultiFiles(files) {
-  const bi = (de, en) => currentLang === 'en' ? en : de;
-  if (!files.length) return;
-
-  // Sort files by type
-  const byType = { data: [], diag: [], params: [] };
-  files.forEach(f => {
-    const type = classifyFile(f);
-    if (byType[type]) byType[type].push(f);
-    else console.warn('Unknown file type:', f.name);
-  });
-
-  // Show what we found
-  const found = [];
-  if (byType.data.length)   found.push(`${byType.data.length} ${bi('Datendatei(en)','data file(s)')}`);
-  if (byType.diag.length)   found.push(`${byType.diag.length} ${bi('Diagnosedatei(en)','diag file(s)')}`);
-  if (byType.params.length) found.push(`${byType.params.length} ${bi('Parameterdatei(en)','param file(s)')}`);
-  console.log('[AFM] Loading:', found.join(', '));
-
-  // Load data first, then after a delay load diag + params
-  const dataFile   = byType.data[0] || null;
-  const diagFiles  = byType.diag;
-  const paramFiles = byType.params;
-
-  if (dataFile) {
-    updateLoadedBadge('data', dataFile.name, true);
-    loadFile(dataFile);
-    // Wait 2 seconds for data to finish parsing before loading secondary files
-    if (diagFiles.length || paramFiles.length) {
-      setTimeout(() => {
-        diagFiles.forEach(file => {
-          loadDiagFile(file);
-          updateLoadedBadge('diag', file.name, true);
-        });
-        paramFiles.forEach(file => {
-          loadParamsFile(file);
-          updateLoadedBadge('params', file.name, true);
-        });
-      }, 2000);
-    }
-  } else {
-    // No data file — load diag/params immediately
-    diagFiles.forEach(file => {
-      loadDiagFile(file);
-      updateLoadedBadge('diag', file.name, true);
-    });
-    paramFiles.forEach(file => {
-      loadParamsFile(file);
-      updateLoadedBadge('params', file.name, true);
-    });
-    // Unrecognised files — try first as data
-    if (!diagFiles.length && !paramFiles.length && files.length) {
-      loadFile(files[0]);
-    }
   }
 }
 
@@ -2134,7 +2031,7 @@ function addYSliderToCard(canvasId, label, color) {
 
 // ===================== PARAMS FILE =====================
 function loadParamsFile(input) {
-  const file = (input instanceof File) ? input : input.files[0];
+  const file = input.files[0];
   if (!file) return;
   const reader = new FileReader();
   reader.onerror = () => alert('Parameter-Datei konnte nicht gelesen werden.');
@@ -2202,7 +2099,7 @@ function updateDeviceCardWithParams() {
 // ===================== HARDWARE SETTINGS =====================
 
 function loadParamsFileHW(input) {
-  const file = (input instanceof File) ? input : input.files[0];
+  const file = input.files[0];
   if (!file) return;
   const reader = new FileReader();
   reader.onload = e => {
@@ -3115,7 +3012,7 @@ function showLoading(v) {
 
 // ===================== DIAG FILE LOADING =====================
 function loadDiagFile(input) {
-  const file = (input instanceof File) ? input : input.files[0];
+  const file = input.files[0];
   if (!file) return;
   showLoading(true);
   const reader = new FileReader();
@@ -5383,7 +5280,7 @@ document.addEventListener('dragover', ev => ev.preventDefault());
 
 
 
-// ── LOGIN ────────────────────────────────────────────────
+// ══ LOGIN ══════════════════════════════════════════════════════════
 const PW_HASH = '6f4963299cc6d9e0f6144baab448ea930b5111e330bbe5cd94307626c4fd9902';
 const SESSION_KEY = 'afm-auth-v1';
 async function doLogin(e) {
@@ -5410,13 +5307,155 @@ async function doLogin(e) {
 }
 document.getElementById('loginPw')?.addEventListener('keydown', e => { if(e.key==='Enter') doLogin(e); });
 (function(){ if(sessionStorage.getItem(SESSION_KEY)==='1') document.getElementById('loginScreen').style.display='none'; })();
-// ── SERVICE WORKER ────────────────────────────────────────
+
+// ══ MULTI-FILE DROP ═════════════════════════════════════════════════
+function classifyFile(file) {
+  const n = file.name.toLowerCase();
+  if (n.endsWith('_params.txt') || n.endsWith('.json')) return 'params';
+  if (n.includes('-diag_') || n.includes('_diag_') || n.includes('-diag.')) return 'diag';
+  if (n.endsWith('.csv')) return 'data';
+  if (n.endsWith('.txt')) return 'params';
+  return 'unknown';
+}
+
+function updateLoadedBadge(type, filename) {
+  const container = document.getElementById('loadedBadges');
+  if (!container) return;
+  container.style.display = 'flex';
+  const existing = container.querySelector('[data-type="' + type + '"]');
+  if (existing) existing.remove();
+  const icons = { data:'📊', diag:'🩺', params:'⚙' };
+  const labels = { data:'Datendatei', diag:'Diagnose', params:'Parameter' };
+  const badge = document.createElement('span');
+  badge.style.cssText = 'background:#E8F5E9;color:#2E7D32;border:1px solid #A5D6A7;border-radius:20px;padding:3px 10px;font-size:10px;font-weight:600';
+  badge.dataset.type = type;
+  badge.innerHTML = icons[type] + ' ' + labels[type] + ': <strong>' + filename + '</strong>';
+  container.appendChild(badge);
+}
+
+function handleMultiSelect(input) {
+  processMultiFiles(Array.from(input.files));
+}
+
+function handleMultiDrop(ev) {
+  ev.preventDefault();
+  document.getElementById('dropZone').classList.remove('dragover');
+  processMultiFiles(Array.from(ev.dataTransfer.files));
+}
+
+function processMultiFiles(files) {
+  if (!files.length) return;
+  const byType = { data:[], diag:[], params:[] };
+  files.forEach(f => {
+    const type = classifyFile(f);
+    if (byType[type]) byType[type].push(f);
+  });
+
+  const dataFile   = byType.data[0]   || null;
+  const diagFiles  = byType.diag;
+  const paramFiles = byType.params;
+
+  if (dataFile) {
+    updateLoadedBadge('data', dataFile.name);
+    // Load data file using FileReader directly (bypasses input.files restriction on Safari)
+    loadFileDirectly(dataFile, () => {
+      // After data loads, wait then load secondary files
+      if (diagFiles.length || paramFiles.length) {
+        setTimeout(() => {
+          diagFiles.forEach(f => { loadDiagFileDirectly(f); updateLoadedBadge('diag', f.name); });
+          paramFiles.forEach(f => { loadParamsFileDirectly(f); updateLoadedBadge('params', f.name); });
+        }, 1500);
+      }
+    });
+  } else {
+    // No data file - load others directly
+    diagFiles.forEach(f => { loadDiagFileDirectly(f); updateLoadedBadge('diag', f.name); });
+    paramFiles.forEach(f => { loadParamsFileDirectly(f); updateLoadedBadge('params', f.name); });
+    if (!diagFiles.length && !paramFiles.length && files.length) {
+      loadFileDirectly(files[0], () => {});
+    }
+  }
+}
+
+// Load data CSV directly from a File object with callback when done
+function loadFileDirectly(file, onDone) {
+  state.filename = file.name;
+  showLoading(true);
+  const reader = new FileReader();
+  reader.onerror = () => { showLoading(false); alert('Datei konnte nicht gelesen werden.'); };
+  reader.onload = e => {
+    try {
+      const normalised = detectAndNormalise(e.target.result);
+      const normText   = typeof normalised === 'string' ? normalised : normalised.text;
+      state.fileFormat = typeof normalised === 'string' ? 'monthly' : normalised.format;
+      const result = Papa.parse(normText, { header:true, skipEmptyLines:true, dynamicTyping:true });
+      if (!result.data || result.data.length === 0) {
+        showLoading(false); alert('CSV leer oder unbekanntes Format.'); return;
+      }
+      state.raw = result.data;
+      state.filtered = [...state.raw];
+      processData();
+      showLoading(false);
+      onDone();
+    } catch(err) {
+      showLoading(false);
+      alert('Fehler: ' + err.message);
+    }
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+// Load diag CSV directly from a File object
+function loadDiagFileDirectly(file) {
+  showLoading(true);
+  const reader = new FileReader();
+  reader.onerror = () => { showLoading(false); };
+  reader.onload = e => {
+    try {
+      const result = Papa.parse(e.target.result, { header:true, skipEmptyLines:true, dynamicTyping:true });
+      if (!result.data || result.data.length === 0) { showLoading(false); return; }
+      state.diag = result.data;
+      state.diagFiltered = [...state.diag];
+      const cols = Object.keys(state.diag[0] || {});
+      const found = new Set();
+      cols.forEach(c => { const m = c.match(/^noisefwd_(\d+)$/); if(m) { const n = parseInt(m[1],10); if(state.diag.some(r=>r[c]!==null&&!isNaN(r[c]))) found.add(n); } });
+      state.diagPaths = [...found].sort((a,b)=>a-b);
+      state.diagActivePaths = [...state.diagPaths];
+      state.diagSelectedPath = state.diagPaths[0] || 1;
+      document.getElementById('diagDropZone').style.display = 'none';
+      document.getElementById('diagContent').style.display = 'block';
+      const diagBadge = document.getElementById('diagLoadedBadge');
+      if (diagBadge) diagBadge.style.display = 'inline';
+      showLoading(false);
+    } catch(err) { showLoading(false); }
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+// Load params JSON directly from a File object  
+function loadParamsFileDirectly(file) {
+  const reader = new FileReader();
+  reader.onerror = () => {};
+  reader.onload = e => {
+    try {
+      state.params = JSON.parse(e.target.result);
+      document.getElementById('paramsDropZone').style.display = 'none';
+      document.getElementById('paramsContent').style.display = 'block';
+      const badge = document.getElementById('paramsDeviceBadge');
+      if (badge && state.params.Overview) {
+        badge.textContent = (state.params.Overview.type||'') + ' · ' + (state.params.Overview.serialno||'');
+        badge.style.display = 'inline';
+      }
+      updateDeviceCardWithParams();
+    } catch(err) {}
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+// ══ SERVICE WORKER ══════════════════════════════════════════════════
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 }
-// ── OFFLINE BAR ───────────────────────────────────────────
-function syncOnline() { document.body.style.setProperty('--offline-bar','none'); if(!navigator.onLine) document.body.style.setProperty('--offline-bar','block'); }
-window.addEventListener('online', syncOnline); window.addEventListener('offline', syncOnline); syncOnline();
 console.log('%c AFM Data Analyser v1.0.0 — GWF Technologies ','background:#004899;color:white;padding:3px 10px;border-radius:3px;font-weight:bold');
 
 </script>
