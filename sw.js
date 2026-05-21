@@ -1,5 +1,5 @@
 /**
- * AFM Data Analyser — Service Worker v1.0.0
+ * AFM Data Analyser — Service Worker v1.1.0
  * Fully offline-capable: all assets pre-cached on install
  */
 const CACHE = 'afm-v1.0.0';
