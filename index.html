@@ -784,6 +784,16 @@
   .login-footer{margin-top:24px;text-align:center;font-size:10px;color:#9AADC8}
   @media(max-width:480px){.login-card{padding:28px 20px;margin:16px}}
 
+
+  .drop-badge {
+    background: var(--gwf-blue-light); color: var(--gwf-blue);
+    border: 1px solid var(--gwf-blue-mid); border-radius: 20px;
+    padding: 3px 10px; font-size: 10px; font-weight: 600;
+    white-space: nowrap;
+  }
+  .drop-badge.loaded { background: var(--gwf-green-light); color: var(--gwf-green); border-color: #A5D6A7; }
+  .drop-badge.error  { background: var(--gwf-red-light);   color: var(--gwf-red);   border-color: #FFCDD2; }
+
 </style>
 </head>
 <body>
@@ -902,14 +912,23 @@
       <!-- ===================== OVERVIEW ===================== -->
       <div class="view active" id="view-overview">
         <div id="dropZoneWrapper">
-          <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()"
+          <div class="drop-zone" id="dropZone"
                ondragover="event.preventDefault();this.classList.add('dragover')"
                ondragleave="this.classList.remove('dragover')"
-               ondrop="handleDrop(event)">
-            <div class="drop-icon">📁</div>
-            <div class="drop-title" data-i18n="drop_title">CSV-Datei laden</div>
-            <div class="drop-sub" data-i18n="drop_sub">Datei hierher ziehen oder klicken zum Auswählen</div>
-            <div class="drop-hint">.csv · Kanalis Datenformat · automatische Spaltenerkennung</div>
+               ondrop="handleMultiDrop(event)"
+               onclick="document.getElementById('multiFileInput').click()">
+            <input type="file" id="multiFileInput" multiple accept=".csv,.txt,.json"
+                   style="display:none" onchange="handleMultiSelect(this)">
+            <div class="drop-icon">📂</div>
+            <div class="drop-title" data-i18n="drop_title">Dateien laden</div>
+            <div class="drop-sub" data-i18n="drop_sub">Alle Dateien auf einmal hierher ziehen oder klicken</div>
+            <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px">
+              <span class="drop-badge">📊 Datendatei <span style="opacity:0.6">*-data_*.csv</span></span>
+              <span class="drop-badge">🩺 Diagnosedatei <span style="opacity:0.6">*-diag_*.csv</span></span>
+              <span class="drop-badge">⚙ Parameterdatei <span style="opacity:0.6">*_params.txt</span></span>
+            </div>
+            <!-- Status badges shown after loading -->
+            <div id="loadedBadges" style="display:none;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:10px"></div>
           </div>
         </div>
         <div id="overviewContent" style="display:none">
@@ -1444,7 +1463,8 @@ const TRANSLATIONS = {
     res_all:'5 min', res_hourly:'Stündlich', res_daily:'Täglich',
     tab_summary:'Zusammenfassung', tab_params_rec:'Parameterempfehlungen',
     tab_service:'Serviceempfehlungen', tab_environment:'Umgebungseinflüsse', tab_errors:'Fehlercodes',
-    drop_title:'CSV-Datei laden', drop_sub:'Datei hierher ziehen oder klicken zum Auswählen',
+    drop_title:'Dateien laden',
+    drop_all_hint:'Alle Dateien auf einmal hierher ziehen oder klicken', drop_sub:'Datei hierher ziehen oder klicken zum Auswählen',
     loading:'Daten werden verarbeitet…',
     col_main:'Hauptparameter', col_paths:'Pfad-Geschwindigkeiten', col_snr:'SNR / Gain',
     col_timing:'Transit Time', col_all:'Alle Spalten',
@@ -1592,7 +1612,8 @@ const TRANSLATIONS = {
     res_all:'5 min', res_hourly:'Hourly', res_daily:'Daily',
     tab_summary:'Summary', tab_params_rec:'Parameter Recommendations',
     tab_service:'Service Recommendations', tab_environment:'Environmental Influences', tab_errors:'Error Codes',
-    drop_title:'Load CSV File', drop_sub:'Drag file here or click to select',
+    drop_title:'Load Files',
+    drop_all_hint:'Drag all files here at once or click to select', drop_sub:'Drag file here or click to select',
     loading:'Processing data…',
     col_main:'Main Parameters', col_paths:'Path Velocities', col_snr:'SNR / Gain',
     col_timing:'Transit Time', col_all:'All Columns',
@@ -1979,6 +2000,90 @@ function handleDrop(ev) {
     dt.items.add(file);
     document.getElementById('fileInput').files = dt.files;
     loadFile(document.getElementById('fileInput'));
+  }
+}
+
+// ── Multi-file drop: auto-detects data / diag / params ──────────────────
+function classifyFile(file) {
+  const n = file.name.toLowerCase();
+  if (n.endsWith('_params.txt') || (n.endsWith('.txt') && !n.endsWith('_params.txt'))) return 'params';
+  if (n.includes('-diag_') || n.includes('_diag_') || n.includes('-diag.')) return 'diag';
+  if (n.endsWith('.csv')) return 'data';
+  if (n.endsWith('.json')) return 'params';
+  return 'unknown';
+}
+
+function updateLoadedBadge(type, filename, ok) {
+  const container = document.getElementById('loadedBadges');
+  container.style.display = 'flex';
+  // Remove existing badge of this type
+  const existing = container.querySelector(`[data-type="${type}"]`);
+  if (existing) existing.remove();
+  const icons = { data:'📊', diag:'🩺', params:'⚙', unknown:'❓' };
+  const labels = { data:bi('Datendatei','Data file'), diag:bi('Diagnose','Diagnostics'), params:bi('Parameter','Parameters'), unknown:'?' };
+  const badge = document.createElement('span');
+  badge.className = 'drop-badge ' + (ok ? 'loaded' : 'error');
+  badge.dataset.type = type;
+  badge.innerHTML = `${icons[type]} ${labels[type]}: <strong>${filename}</strong>`;
+  container.appendChild(badge);
+}
+
+function handleMultiSelect(input) {
+  processMultiFiles(Array.from(input.files));
+}
+
+function handleMultiDrop(ev) {
+  ev.preventDefault();
+  document.getElementById('dropZone').classList.remove('dragover');
+  processMultiFiles(Array.from(ev.dataTransfer.files));
+}
+
+function processMultiFiles(files) {
+  const bi = (de, en) => currentLang === 'en' ? en : de;
+  if (!files.length) return;
+
+  // Sort files by type
+  const byType = { data: [], diag: [], params: [] };
+  files.forEach(f => {
+    const type = classifyFile(f);
+    if (byType[type]) byType[type].push(f);
+    else console.warn('Unknown file type:', f.name);
+  });
+
+  // Show what we found
+  const found = [];
+  if (byType.data.length)   found.push(`${byType.data.length} ${bi('Datendatei(en)','data file(s)')}`);
+  if (byType.diag.length)   found.push(`${byType.diag.length} ${bi('Diagnosedatei(en)','diag file(s)')}`);
+  if (byType.params.length) found.push(`${byType.params.length} ${bi('Parameterdatei(en)','param file(s)')}`);
+  console.log('[AFM] Loading:', found.join(', '));
+
+  // Load each type
+  byType.data.forEach(file => {
+    const dt = new DataTransfer(); dt.items.add(file);
+    const input = document.getElementById('fileInput');
+    if (input) { input.files = dt.files; loadFile(input); }
+    updateLoadedBadge('data', file.name, true);
+  });
+
+  byType.diag.forEach(file => {
+    const dt = new DataTransfer(); dt.items.add(file);
+    const diagInput = document.getElementById('diagFileInput');
+    if (diagInput) { diagInput.files = dt.files; loadDiagFile(diagInput); }
+    updateLoadedBadge('diag', file.name, true);
+  });
+
+  byType.params.forEach(file => {
+    const dt = new DataTransfer(); dt.items.add(file);
+    const paramsInput = document.getElementById('paramsFileInput');
+    if (paramsInput) { paramsInput.files = dt.files; loadParamsFile(paramsInput); }
+    updateLoadedBadge('params', file.name, true);
+  });
+
+  // If nothing recognised, fall back to single-file behaviour
+  if (!byType.data.length && !byType.diag.length && !byType.params.length && files.length) {
+    const dt = new DataTransfer(); dt.items.add(files[0]);
+    const input = document.getElementById('fileInput');
+    if (input) { input.files = dt.files; loadFile(input); }
   }
 }
 
