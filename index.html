@@ -749,23 +749,22 @@
   }
 
 
+
   #loginScreen{position:fixed;inset:0;z-index:10000;background:linear-gradient(145deg,#001F52,#003380,#004A9A);display:flex;align-items:center;justify-content:center}
   .lcard{background:white;border-radius:18px;padding:36px 40px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,20,60,0.45);animation:lup 0.3s ease}
   @keyframes lup{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
   .lmark{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#00ABBE,#007F8F);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:white;font-family:monospace;margin:0 auto 6px}
   .lname{font-size:16px;font-weight:800;color:#0D1B3E;text-align:center}
-  .lsub{font-size:11px;color:#6B7FA0;text-align:center;margin-bottom:20px}
-  .ldiv{height:1px;background:#E8EDF5;margin:14px 0}
-  .lhead{font-size:13px;font-weight:700;color:#0D1B3E;text-align:center;margin-bottom:4px}
-  .llbl{display:block;font-size:10px;font-weight:700;color:#2D3F6A;margin-bottom:5px;letter-spacing:0.5px;text-transform:uppercase}
-  .linp{width:100%;padding:10px 12px;border:1.5px solid #D0DAF0;border-radius:9px;font-size:14px;color:#0D1B3E;background:#F5F8FF;outline:none;box-sizing:border-box;font-family:inherit}
+  .lsub2{font-size:11px;color:#6B7FA0;text-align:center;margin-bottom:16px}
+  .ldiv{height:1px;background:#E8EDF5;margin:12px 0}
+  .lhead{font-size:13px;font-weight:700;color:#0D1B3E;text-align:center;margin-bottom:12px}
+  .linp{width:100%;padding:10px 12px;border:1.5px solid #D0DAF0;border-radius:9px;font-size:14px;color:#0D1B3E;background:#F5F8FF;outline:none;box-sizing:border-box;font-family:inherit;margin-bottom:4px}
   .linp:focus{border-color:#0057B8;box-shadow:0 0 0 3px #EBF2FF;background:white}
   .linp.lshake{animation:lshake 0.3s ease;border-color:#D32F2F}
   @keyframes lshake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
-  .lerr{font-size:11px;color:#D32F2F;margin-top:5px;display:none}.lerr.show{display:block}
-  .lbtn{width:100%;padding:11px;margin-top:12px;background:linear-gradient(135deg,#0057B8,#003380);color:white;border:none;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity 0.15s}
-  .lbtn:disabled{opacity:0.6;cursor:not-allowed}
-  .lfoot{margin-top:20px;text-align:center;font-size:10px;color:#9AADC8}
+  .lerr{font-size:11px;color:#D32F2F;margin-bottom:8px;display:none}.lerr.show{display:block}
+  .lbtn{width:100%;padding:11px;background:linear-gradient(135deg,#0057B8,#003380);color:white;border:none;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+  .lfoot{margin-top:18px;text-align:center;font-size:10px;color:#9AADC8}
   @media(max-width:480px){.lcard{padding:24px 18px;margin:12px}}
 </style>
 </head>
@@ -5263,161 +5262,139 @@ function exportCSV() {
 document.addEventListener('dragover', ev => ev.preventDefault());
 
 
+
+// ══ MULTI-FILE DROP ════════════════════════════════════════════════════
+function classifyDropFile(file) {
+  const n = file.name.toLowerCase();
+  if (n.endsWith('_params.txt') || n.endsWith('.json')) return 'params';
+  if (n.includes('-diag_') || n.includes('_diag_')) return 'diag';
+  if (n.endsWith('.csv')) return 'data';
+  if (n.endsWith('.txt')) return 'params';
+  return 'data';
+}
+
+function showLoadedBadge(type, name) {
+  const c = document.getElementById('loadedBadges');
+  if (!c) return;
+  c.style.display = 'flex';
+  const ex = c.querySelector('[data-btype="' + type + '"]');
+  if (ex) ex.remove();
+  const b = document.createElement('span');
+  b.dataset.btype = type;
+  b.style.cssText = 'background:#E8F5E9;color:#2E7D32;border:1px solid #A5D6A7;border-radius:14px;padding:3px 10px;font-size:10px;font-weight:600';
+  const icons = {data:'📊', diag:'🩺', params:'⚙'};
+  b.textContent = icons[type] + ' ' + name;
+  c.appendChild(b);
+}
+
+function handleMultiSelect(inp) {
+  processDroppedFiles(Array.from(inp.files));
+}
+
+function handleMultiDrop(ev) {
+  ev.preventDefault();
+  document.getElementById('dropZone').classList.remove('dragover');
+  processDroppedFiles(Array.from(ev.dataTransfer.files));
+}
+
+function processDroppedFiles(files) {
+  if (!files.length) return;
+  const by = { data: [], diag: [], params: [] };
+  files.forEach(f => {
+    const t = classifyDropFile(f);
+    if (by[t]) by[t].push(f);
+  });
+
+  const dataFile = by.data[0] || null;
+
+  if (dataFile) {
+    // Load data file using existing loadFile() — pass File object directly
+    showLoadedBadge('data', dataFile.name);
+    // Create a minimal fake input that loadFile() can use
+    const fakeInput = { files: [dataFile], files_0: dataFile };
+    // loadFile accepts (input instanceof File) check — pass File directly
+    loadFile(dataFile);
+
+    // Load secondary files after data finishes (2 second delay)
+    if (by.diag.length || by.params.length) {
+      setTimeout(() => {
+        by.diag.forEach(f => {
+          showLoadedBadge('diag', f.name);
+          loadDiagFile(f);
+        });
+        by.params.forEach(f => {
+          showLoadedBadge('params', f.name);
+          loadParamsFile(f);
+        });
+      }, 2000);
+    }
+  } else {
+    by.diag.forEach(f => { showLoadedBadge('diag', f.name); loadDiagFile(f); });
+    by.params.forEach(f => { showLoadedBadge('params', f.name); loadParamsFile(f); });
+    if (!by.diag.length && !by.params.length && files.length) loadFile(files[0]);
+  }
+}
+
+// ══ LOGIN ══════════════════════════════════════════════════════════════
+const _PW_HASH = '6f4963299cc6d9e0f6144baab448ea930b5111e330bbe5cd94307626c4fd9902';
+const _SESS_KEY = 'afm-auth-v1';
+
+async function doLogin(e) {
+  e.preventDefault();
+  const pw  = document.getElementById('loginPw').value;
+  const btn = document.getElementById('loginBtn');
+  const inp = document.getElementById('loginPw');
+  const err = document.getElementById('loginErr');
+  if (!pw) return;
+  btn.disabled = true; btn.textContent = '…';
+  const buf  = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+  const hash = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  if (hash === _PW_HASH) {
+    sessionStorage.setItem(_SESS_KEY, '1');
+    const s = document.getElementById('loginScreen');
+    s.style.transition = 'opacity 0.3s';
+    s.style.opacity = '0';
+    setTimeout(() => s.style.display = 'none', 300);
+  } else {
+    inp.classList.add('lshake');
+    err.classList.add('show');
+    inp.value = '';
+    inp.focus();
+    btn.disabled = false;
+    btn.textContent = 'Anmelden';
+    setTimeout(() => inp.classList.remove('lshake'), 400);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('loginPw')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin(e);
+  });
+  if (sessionStorage.getItem(_SESS_KEY) === '1') {
+    document.getElementById('loginScreen').style.display = 'none';
+  }
+});
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+}
+
 </script>
 
 <div id="loginScreen">
   <div class="lcard">
     <div class="lmark">AFM</div>
     <div class="lname">AFM Data Analyser</div>
-    <div class="lsub">GWF Technologies</div>
+    <div class="lsub2">GWF Technologies</div>
     <div class="ldiv"></div>
-    <div class="lhead">Anmeldung erforderlich</div>
-    <div class="lsub">Passwort eingeben um fortzufahren</div>
+    <div class="lhead">Passwort eingeben</div>
     <form onsubmit="doLogin(event)">
-      <label class="llbl">Passwort</label>
       <input type="password" id="loginPw" class="linp" placeholder="••••••••" autofocus>
       <div class="lerr" id="loginErr">Falsches Passwort.</div>
       <button type="submit" class="lbtn" id="loginBtn">Anmelden</button>
     </form>
-    <div class="lfoot">v1.0.0 · gwf-group.com</div>
+    <div class="lfoot">AFM Data Analyser v1.0.0 · GWF Technologies</div>
   </div>
 </div>
-
-<script>
-// LOGIN
-const _PW = '6f4963299cc6d9e0f6144baab448ea930b5111e330bbe5cd94307626c4fd9902';
-const _SK = 'afm1';
-async function doLogin(e) {
-  e.preventDefault();
-  const pw=document.getElementById('loginPw').value;
-  const btn=document.getElementById('loginBtn');
-  const inp=document.getElementById('loginPw');
-  const err=document.getElementById('loginErr');
-  if(!pw) return;
-  btn.disabled=true; btn.textContent='…';
-  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pw));
-  const h=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-  if(h===_PW){
-    sessionStorage.setItem(_SK,'1');
-    const s=document.getElementById('loginScreen');
-    s.style.transition='opacity 0.3s';s.style.opacity='0';
-    setTimeout(()=>s.style.display='none',300);
-  }else{
-    inp.classList.add('lshake');err.classList.add('show');
-    inp.value='';inp.focus();
-    btn.disabled=false;btn.textContent='Anmelden';
-    setTimeout(()=>inp.classList.remove('lshake'),400);
-  }
-}
-document.getElementById('loginPw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin(e);});
-if(sessionStorage.getItem(_SK)==='1') document.getElementById('loginScreen').style.display='none';
-
-// MULTI-FILE DROP
-function _classify(f){
-  const n=f.name.toLowerCase();
-  if(n.endsWith('_params.txt')||n.endsWith('.json')) return 'params';
-  if(n.includes('-diag_')||n.includes('_diag_')) return 'diag';
-  if(n.endsWith('.csv')) return 'data';
-  if(n.endsWith('.txt')) return 'params';
-  return 'data';
-}
-function _badge(type,name){
-  const c=document.getElementById('loadedBadges');
-  if(!c) return;
-  c.style.display='flex';
-  const ex=c.querySelector('[data-t="'+type+'"]');
-  if(ex) ex.remove();
-  const b=document.createElement('span');
-  b.dataset.t=type;
-  b.style.cssText='background:#E8F5E9;color:#2E7D32;border:1px solid #A5D6A7;border-radius:14px;padding:3px 10px;font-size:10px;font-weight:600';
-  const icons={data:'📊',diag:'🩺',params:'⚙'};
-  b.innerHTML=icons[type]+' '+name;
-  c.appendChild(b);
-}
-function handleMultiSelect(inp){ _processFiles(Array.from(inp.files)); }
-function handleMultiDrop(ev){
-  ev.preventDefault();
-  document.getElementById('dropZone').classList.remove('dragover');
-  _processFiles(Array.from(ev.dataTransfer.files));
-}
-function _readAndLoad(file, onDone){
-  // Read file and load using existing loadFile machinery
-  state.filename=file.name;
-  showLoading(true);
-  const r=new FileReader();
-  r.onerror=()=>{showLoading(false);};
-  r.onload=e=>{
-    try{
-      const norm=detectAndNormalise(e.target.result);
-      const txt=typeof norm==='string'?norm:norm.text;
-      state.fileFormat=typeof norm==='string'?'monthly':norm.format;
-      const res=Papa.parse(txt,{header:true,skipEmptyLines:true,dynamicTyping:true});
-      if(!res.data||!res.data.length){showLoading(false);alert('CSV leer.');return;}
-      state.raw=res.data;
-      state.filtered=[...state.raw];
-      processData();
-      showLoading(false);
-      if(onDone) onDone();
-    }catch(err){showLoading(false);alert('Fehler: '+err.message);}
-  };
-  r.readAsText(file,'UTF-8');
-}
-function _readAndLoadDiag(file){
-  const r=new FileReader();
-  r.onerror=()=>{};
-  r.onload=e=>{
-    try{
-      const res=Papa.parse(e.target.result,{header:true,skipEmptyLines:true,dynamicTyping:true});
-      if(!res.data||!res.data.length) return;
-      state.diag=res.data;state.diagFiltered=[...res.data];
-      const cols=Object.keys(res.data[0]||{});
-      const found=new Set();
-      cols.forEach(c=>{const m=c.match(/^noisefwd_(\d+)$/);if(m){const n=parseInt(m[1]);if(res.data.some(r=>r[c]!==null&&!isNaN(r[c])))found.add(n);}});
-      state.diagPaths=[...found].sort((a,b)=>a-b);
-      state.diagActivePaths=[...state.diagPaths];
-      state.diagSelectedPath=state.diagPaths[0]||1;
-      document.getElementById('diagDropZone').style.display='none';
-      document.getElementById('diagContent').style.display='block';
-      const db=document.getElementById('diagLoadedBadge');if(db)db.style.display='inline';
-    }catch(e){}
-  };
-  r.readAsText(file,'UTF-8');
-}
-function _readAndLoadParams(file){
-  const r=new FileReader();
-  r.onerror=()=>{};
-  r.onload=e=>{
-    try{
-      state.params=JSON.parse(e.target.result);
-      document.getElementById('paramsDropZone').style.display='none';
-      document.getElementById('paramsContent').style.display='block';
-      const b=document.getElementById('paramsDeviceBadge');
-      if(b&&state.params.Overview){b.textContent=(state.params.Overview.type||'')+' · '+(state.params.Overview.serialno||'');b.style.display='inline';}
-      updateDeviceCardWithParams();
-    }catch(e){}
-  };
-  r.readAsText(file,'UTF-8');
-}
-function _processFiles(files){
-  if(!files.length) return;
-  const by={data:[],diag:[],params:[]};
-  files.forEach(f=>{const t=_classify(f);if(by[t])by[t].push(f);});
-  const df=by.data[0]||null;
-  if(df){
-    _badge('data',df.name);
-    _readAndLoad(df,()=>{
-      setTimeout(()=>{
-        by.diag.forEach(f=>{_badge('diag',f.name);_readAndLoadDiag(f);});
-        by.params.forEach(f=>{_badge('params',f.name);_readAndLoadParams(f);});
-      },1500);
-    });
-  }else{
-    by.diag.forEach(f=>{_badge('diag',f.name);_readAndLoadDiag(f);});
-    by.params.forEach(f=>{_badge('params',f.name);_readAndLoadParams(f);});
-    if(!by.diag.length&&!by.params.length&&files.length)_readAndLoad(files[0],()=>{});
-  }
-}
-if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
-</script>
 </body>
 </html>
