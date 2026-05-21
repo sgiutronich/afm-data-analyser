@@ -753,10 +753,10 @@
   #loginScreen{position:fixed;inset:0;z-index:10000;background:linear-gradient(145deg,#001F52,#003380,#004A9A);display:flex;align-items:center;justify-content:center}
   .lcard{background:white;border-radius:18px;padding:36px 40px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,20,60,0.45);animation:lup 0.3s ease}
   @keyframes lup{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-  .lmark{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#00ABBE,#007F8F);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:white;font-family:monospace;margin:0 auto 6px}
+  .lmark{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#00ABBE,#007F8F);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:white;font-family:monospace;margin:0 auto 8px}
   .lname{font-size:16px;font-weight:800;color:#0D1B3E;text-align:center}
   .lsub2{font-size:11px;color:#6B7FA0;text-align:center;margin-bottom:16px}
-  .ldiv{height:1px;background:#E8EDF5;margin:12px 0}
+  .ldiv{height:1px;background:#E8EDF5;margin:12px 0 18px}
   .lhead{font-size:13px;font-weight:700;color:#0D1B3E;text-align:center;margin-bottom:12px}
   .linp{width:100%;padding:10px 12px;border:1.5px solid #D0DAF0;border-radius:9px;font-size:14px;color:#0D1B3E;background:#F5F8FF;outline:none;box-sizing:border-box;font-family:inherit;margin-bottom:4px}
   .linp:focus{border-color:#0057B8;box-shadow:0 0 0 3px #EBF2FF;background:white}
@@ -1919,7 +1919,7 @@ function detectAndNormalise(rawText) {
 
 // ===================== FILE LOADING =====================
 function loadFile(input) {
-  const file = input.files[0];
+  const file = (input instanceof File) ? input : input.files[0];
   if (!file) return;
   state.filename = file.name;
   showLoading(true);
@@ -2014,7 +2014,7 @@ function addYSliderToCard(canvasId, label, color) {
 
 // ===================== PARAMS FILE =====================
 function loadParamsFile(input) {
-  const file = input.files[0];
+  const file = (input instanceof File) ? input : input.files[0];
   if (!file) return;
   const reader = new FileReader();
   reader.onerror = () => alert('Parameter-Datei konnte nicht gelesen werden.');
@@ -2082,7 +2082,7 @@ function updateDeviceCardWithParams() {
 // ===================== HARDWARE SETTINGS =====================
 
 function loadParamsFileHW(input) {
-  const file = input.files[0];
+  const file = (input instanceof File) ? input : input.files[0];
   if (!file) return;
   const reader = new FileReader();
   reader.onload = e => {
@@ -2995,7 +2995,7 @@ function showLoading(v) {
 
 // ===================== DIAG FILE LOADING =====================
 function loadDiagFile(input) {
-  const file = input.files[0];
+  const file = (input instanceof File) ? input : input.files[0];
   if (!file) return;
   showLoading(true);
   const reader = new FileReader();
@@ -5263,16 +5263,15 @@ document.addEventListener('dragover', ev => ev.preventDefault());
 
 
 
-// ══ MULTI-FILE DROP ════════════════════════════════════════════════════
-function classifyDropFile(file) {
-  const n = file.name.toLowerCase();
+// ══ MULTI-FILE DROP ═════════════════════════════════════════
+function classifyDropFile(f) {
+  const n = f.name.toLowerCase();
   if (n.endsWith('_params.txt') || n.endsWith('.json')) return 'params';
   if (n.includes('-diag_') || n.includes('_diag_')) return 'diag';
   if (n.endsWith('.csv')) return 'data';
   if (n.endsWith('.txt')) return 'params';
   return 'data';
 }
-
 function showLoadedBadge(type, name) {
   const c = document.getElementById('loadedBadges');
   if (!c) return;
@@ -5282,50 +5281,27 @@ function showLoadedBadge(type, name) {
   const b = document.createElement('span');
   b.dataset.btype = type;
   b.style.cssText = 'background:#E8F5E9;color:#2E7D32;border:1px solid #A5D6A7;border-radius:14px;padding:3px 10px;font-size:10px;font-weight:600';
-  const icons = {data:'📊', diag:'🩺', params:'⚙'};
-  b.textContent = icons[type] + ' ' + name;
+  b.textContent = ({data:'📊',diag:'🩺',params:'⚙'})[type] + ' ' + name;
   c.appendChild(b);
 }
-
-function handleMultiSelect(inp) {
-  processDroppedFiles(Array.from(inp.files));
-}
-
+function handleMultiSelect(inp) { processDroppedFiles(Array.from(inp.files)); }
 function handleMultiDrop(ev) {
   ev.preventDefault();
   document.getElementById('dropZone').classList.remove('dragover');
   processDroppedFiles(Array.from(ev.dataTransfer.files));
 }
-
 function processDroppedFiles(files) {
   if (!files.length) return;
-  const by = { data: [], diag: [], params: [] };
-  files.forEach(f => {
-    const t = classifyDropFile(f);
-    if (by[t]) by[t].push(f);
-  });
-
+  const by = {data:[],diag:[],params:[]};
+  files.forEach(f => { const t=classifyDropFile(f); if(by[t]) by[t].push(f); });
   const dataFile = by.data[0] || null;
-
   if (dataFile) {
-    // Load data file using existing loadFile() — pass File object directly
     showLoadedBadge('data', dataFile.name);
-    // Create a minimal fake input that loadFile() can use
-    const fakeInput = { files: [dataFile], files_0: dataFile };
-    // loadFile accepts (input instanceof File) check — pass File directly
-    loadFile(dataFile);
-
-    // Load secondary files after data finishes (2 second delay)
+    loadFile(dataFile);  // now works because loadFile accepts File objects
     if (by.diag.length || by.params.length) {
       setTimeout(() => {
-        by.diag.forEach(f => {
-          showLoadedBadge('diag', f.name);
-          loadDiagFile(f);
-        });
-        by.params.forEach(f => {
-          showLoadedBadge('params', f.name);
-          loadParamsFile(f);
-        });
+        by.diag.forEach(f => { showLoadedBadge('diag', f.name); loadDiagFile(f); });
+        by.params.forEach(f => { showLoadedBadge('params', f.name); loadParamsFile(f); });
       }, 2000);
     }
   } else {
@@ -5335,49 +5311,36 @@ function processDroppedFiles(files) {
   }
 }
 
-// ══ LOGIN ══════════════════════════════════════════════════════════════
+// ══ LOGIN ═══════════════════════════════════════════════════
 const _PW_HASH = '6f4963299cc6d9e0f6144baab448ea930b5111e330bbe5cd94307626c4fd9902';
 const _SESS_KEY = 'afm-auth-v1';
-
 async function doLogin(e) {
   e.preventDefault();
-  const pw  = document.getElementById('loginPw').value;
-  const btn = document.getElementById('loginBtn');
-  const inp = document.getElementById('loginPw');
-  const err = document.getElementById('loginErr');
-  if (!pw) return;
-  btn.disabled = true; btn.textContent = '…';
-  const buf  = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
-  const hash = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
-  if (hash === _PW_HASH) {
-    sessionStorage.setItem(_SESS_KEY, '1');
-    const s = document.getElementById('loginScreen');
-    s.style.transition = 'opacity 0.3s';
-    s.style.opacity = '0';
-    setTimeout(() => s.style.display = 'none', 300);
-  } else {
-    inp.classList.add('lshake');
-    err.classList.add('show');
-    inp.value = '';
-    inp.focus();
-    btn.disabled = false;
-    btn.textContent = 'Anmelden';
-    setTimeout(() => inp.classList.remove('lshake'), 400);
+  const pw=document.getElementById('loginPw').value;
+  const btn=document.getElementById('loginBtn');
+  const inp=document.getElementById('loginPw');
+  const err=document.getElementById('loginErr');
+  if(!pw) return;
+  btn.disabled=true; btn.textContent='…';
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pw));
+  const hash=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  if(hash===_PW_HASH){
+    sessionStorage.setItem(_SESS_KEY,'1');
+    const s=document.getElementById('loginScreen');
+    s.style.transition='opacity 0.3s';s.style.opacity='0';
+    setTimeout(()=>s.style.display='none',300);
+  }else{
+    inp.classList.add('lshake');err.classList.add('show');
+    inp.value='';inp.focus();
+    btn.disabled=false;btn.textContent='Anmelden';
+    setTimeout(()=>inp.classList.remove('lshake'),400);
   }
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('loginPw')?.addEventListener('keydown', e => {
-    if (e.key === 'Enter') doLogin(e);
-  });
-  if (sessionStorage.getItem(_SESS_KEY) === '1') {
-    document.getElementById('loginScreen').style.display = 'none';
-  }
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('loginPw')?.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin(e);});
+  if(sessionStorage.getItem(_SESS_KEY)==='1') document.getElementById('loginScreen').style.display='none';
 });
-
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
-}
+if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 
 </script>
 
