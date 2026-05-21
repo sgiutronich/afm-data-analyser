@@ -1951,46 +1951,41 @@ function detectAndNormalise(rawText) {
 // ===================== FILE LOADING =====================
 function loadFile(input) {
   const file = (input instanceof File) ? input : input.files[0];
-  if (!file) return Promise.resolve();
+  if (!file) return;
   state.filename = file.name;
   showLoading(true);
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = () => {
-      showLoading(false);
-      alert('Fehler: Datei konnte nicht gelesen werden.');
-      resolve();
-    };
-    reader.onload = e => {
-      try {
-        const normalised = detectAndNormalise(e.target.result);
-        const normText   = typeof normalised === 'string' ? normalised : normalised.text;
-        state.fileFormat = typeof normalised === 'string' ? 'monthly' : normalised.format;
-        const result = Papa.parse(normText, {
-          header: true,
-          skipEmptyLines: true,
-          dynamicTyping: true,
-          error: (err) => console.warn('PapaParse warning:', err)
-        });
-        if (!result.data || result.data.length === 0) {
-          showLoading(false);
-          alert('Die CSV-Datei scheint leer zu sein oder hat ein unbekanntes Format.');
-          resolve(); return;
-        }
-        state.raw = result.data;
-        state.filtered = [...state.raw];
-        processData();
+  const reader = new FileReader();
+  reader.onerror = () => {
+    showLoading(false);
+    alert('Fehler: Datei konnte nicht gelesen werden.');
+  };
+  reader.onload = e => {
+    try {
+      const normalised = detectAndNormalise(e.target.result);
+      const normText   = typeof normalised === 'string' ? normalised : normalised.text;
+      state.fileFormat = typeof normalised === 'string' ? 'monthly' : normalised.format;
+      const result = Papa.parse(normText, {
+        header: true,
+        skipEmptyLines: true,
+        dynamicTyping: true,
+        error: (err) => console.warn('PapaParse warning:', err)
+      });
+      if (!result.data || result.data.length === 0) {
         showLoading(false);
-        resolve();
-      } catch(err) {
-        showLoading(false);
-        console.error('Fehler beim Verarbeiten:', err);
-        alert('Fehler beim Verarbeiten der Datei:\n' + err.message);
-        resolve();
+        alert('Die CSV-Datei scheint leer zu sein oder hat ein unbekanntes Format.');
+        return;
       }
-    };
-    reader.readAsText(file, 'UTF-8');
-  });
+      state.raw = result.data;
+      state.filtered = [...state.raw];
+      processData();
+      showLoading(false);
+    } catch(err) {
+      showLoading(false);
+      console.error('Fehler beim Verarbeiten:', err);
+      alert('Fehler beim Verarbeiten der Datei:\n' + err.message);
+    }
+  };
+  reader.readAsText(file, 'UTF-8');
 }
 
 function handleDrop(ev) {
@@ -2059,12 +2054,29 @@ function processMultiFiles(files) {
   if (byType.params.length) found.push(`${byType.params.length} ${bi('Parameterdatei(en)','param file(s)')}`);
   console.log('[AFM] Loading:', found.join(', '));
 
-  // Load data file first (async), then diag + params after it completes
-  const dataFile   = byType.data[0]   || null;
+  // Load data first, then after a delay load diag + params
+  const dataFile   = byType.data[0] || null;
   const diagFiles  = byType.diag;
   const paramFiles = byType.params;
 
-  const loadSecondary = () => {
+  if (dataFile) {
+    updateLoadedBadge('data', dataFile.name, true);
+    loadFile(dataFile);
+    // Wait 2 seconds for data to finish parsing before loading secondary files
+    if (diagFiles.length || paramFiles.length) {
+      setTimeout(() => {
+        diagFiles.forEach(file => {
+          loadDiagFile(file);
+          updateLoadedBadge('diag', file.name, true);
+        });
+        paramFiles.forEach(file => {
+          loadParamsFile(file);
+          updateLoadedBadge('params', file.name, true);
+        });
+      }, 2000);
+    }
+  } else {
+    // No data file — load diag/params immediately
     diagFiles.forEach(file => {
       loadDiagFile(file);
       updateLoadedBadge('diag', file.name, true);
@@ -2073,23 +2085,10 @@ function processMultiFiles(files) {
       loadParamsFile(file);
       updateLoadedBadge('params', file.name, true);
     });
-  };
-
-  if (dataFile) {
-    updateLoadedBadge('data', dataFile.name, true);
-    // Wait for data to finish loading before loading diag/params
-    const p = loadFile(dataFile);
-    if (p && typeof p.then === 'function') {
-      p.then(loadSecondary);
-    } else {
-      setTimeout(loadSecondary, 500);
+    // Unrecognised files — try first as data
+    if (!diagFiles.length && !paramFiles.length && files.length) {
+      loadFile(files[0]);
     }
-  } else if (diagFiles.length || paramFiles.length) {
-    // No data file — just load diag/params directly
-    loadSecondary();
-  } else if (files.length) {
-    // Unrecognised file — try as data
-    loadFile(files[0]);
   }
 }
 
