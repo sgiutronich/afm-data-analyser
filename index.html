@@ -749,40 +749,24 @@
   }
 
 
-
-  /* LOGIN */
-  #loginScreen {
-    position:fixed;inset:0;z-index:10000;
-    background:linear-gradient(145deg,#001F52 0%,#003380 50%,#004A9A 100%);
-    display:flex;align-items:center;justify-content:center;
-  }
-  .login-card {
-    background:white;border-radius:20px;padding:40px 44px;
-    width:100%;max-width:380px;position:relative;
-    box-shadow:0 24px 64px rgba(0,20,60,0.45);
-    animation:loginUp 0.35s cubic-bezier(0.34,1.56,0.64,1);
-  }
-  @keyframes loginUp{from{opacity:0;transform:translateY(20px) scale(0.97)}to{opacity:1;transform:none}}
-  .login-logo{display:flex;align-items:center;gap:12px;margin-bottom:28px;justify-content:center}
-  .login-logo-mark{width:46px;height:46px;border-radius:13px;background:linear-gradient(135deg,#00ABBE,#007F8F);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:white;font-family:monospace;box-shadow:0 4px 16px rgba(0,170,190,0.4)}
-  .login-logo-name{font-size:17px;font-weight:800;color:#0D1B3E}
-  .login-logo-sub{font-size:11px;color:#6B7FA0;margin-top:2px}
-  .login-divider{height:1px;background:#E8EDF5;margin:0 0 22px}
-  .login-heading{font-size:14px;font-weight:700;color:#0D1B3E;text-align:center;margin-bottom:4px}
-  .login-sub{font-size:12px;color:#6B7FA0;text-align:center;margin-bottom:20px}
-  .login-label{display:block;font-size:10px;font-weight:700;color:#2D3F6A;margin-bottom:5px;letter-spacing:0.5px;text-transform:uppercase}
-  .login-input{width:100%;padding:11px 13px;border:1.5px solid #D0DAF0;border-radius:10px;font-size:14px;color:#0D1B3E;background:#F5F8FF;outline:none;transition:border-color 0.15s,box-shadow 0.15s;font-family:inherit;box-sizing:border-box}
-  .login-input:focus{border-color:#0057B8;box-shadow:0 0 0 3px #EBF2FF;background:white}
-  .login-input.shake{animation:shake 0.3s ease;border-color:#D32F2F}
-  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
-  .login-error{font-size:11px;color:#D32F2F;margin-top:5px;display:none;font-weight:500}
-  .login-error.show{display:block}
-  .login-btn{width:100%;padding:12px;margin-top:14px;background:linear-gradient(135deg,#0057B8,#003380);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(0,87,184,0.35);transition:all 0.15s;font-family:inherit}
-  .login-btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(0,87,184,0.45)}
-  .login-btn:disabled{opacity:0.6;cursor:not-allowed;transform:none}
-  .login-footer{margin-top:24px;text-align:center;font-size:10px;color:#9AADC8}
-  @media(max-width:480px){.login-card{padding:28px 20px;margin:16px}}
-
+  #loginScreen{position:fixed;inset:0;z-index:10000;background:linear-gradient(145deg,#001F52,#003380,#004A9A);display:flex;align-items:center;justify-content:center}
+  .lcard{background:white;border-radius:18px;padding:36px 40px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,20,60,0.45);animation:lup 0.3s ease}
+  @keyframes lup{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  .lmark{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#00ABBE,#007F8F);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:white;font-family:monospace;margin:0 auto 6px}
+  .lname{font-size:16px;font-weight:800;color:#0D1B3E;text-align:center}
+  .lsub{font-size:11px;color:#6B7FA0;text-align:center;margin-bottom:20px}
+  .ldiv{height:1px;background:#E8EDF5;margin:14px 0}
+  .lhead{font-size:13px;font-weight:700;color:#0D1B3E;text-align:center;margin-bottom:4px}
+  .llbl{display:block;font-size:10px;font-weight:700;color:#2D3F6A;margin-bottom:5px;letter-spacing:0.5px;text-transform:uppercase}
+  .linp{width:100%;padding:10px 12px;border:1.5px solid #D0DAF0;border-radius:9px;font-size:14px;color:#0D1B3E;background:#F5F8FF;outline:none;box-sizing:border-box;font-family:inherit}
+  .linp:focus{border-color:#0057B8;box-shadow:0 0 0 3px #EBF2FF;background:white}
+  .linp.lshake{animation:lshake 0.3s ease;border-color:#D32F2F}
+  @keyframes lshake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+  .lerr{font-size:11px;color:#D32F2F;margin-top:5px;display:none}.lerr.show{display:block}
+  .lbtn{width:100%;padding:11px;margin-top:12px;background:linear-gradient(135deg,#0057B8,#003380);color:white;border:none;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity 0.15s}
+  .lbtn:disabled{opacity:0.6;cursor:not-allowed}
+  .lfoot{margin-top:20px;text-align:center;font-size:10px;color:#9AADC8}
+  @media(max-width:480px){.lcard{padding:24px 18px;margin:12px}}
 </style>
 </head>
 <body>
@@ -910,11 +894,11 @@
                    style="display:none" onchange="handleMultiSelect(this)">
             <div class="drop-icon">📂</div>
             <div class="drop-title">Dateien laden</div>
-            <div class="drop-sub">Alle Dateien gleichzeitig hierher ziehen oder klicken</div>
+            <div class="drop-sub">Alle Dateien gleichzeitig hierher ziehen — oder klicken</div>
             <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px">
-              <span style="background:var(--gwf-blue-light);color:var(--gwf-blue);border:1px solid #C5D8F0;border-radius:20px;padding:3px 10px;font-size:10px;font-weight:600">📊 Datendatei <span style="opacity:0.6">*-data_*.csv</span></span>
-              <span style="background:var(--gwf-blue-light);color:var(--gwf-blue);border:1px solid #C5D8F0;border-radius:20px;padding:3px 10px;font-size:10px;font-weight:600">🩺 Diagnosedatei <span style="opacity:0.6">*-diag_*.csv</span></span>
-              <span style="background:var(--gwf-blue-light);color:var(--gwf-blue);border:1px solid #C5D8F0;border-radius:20px;padding:3px 10px;font-size:10px;font-weight:600">⚙ Parameterdatei <span style="opacity:0.6">*_params.txt</span></span>
+              <span style="background:#E6EEF8;color:#004899;border:1px solid #C5D8F0;border-radius:16px;padding:3px 10px;font-size:10px;font-weight:600">📊 Datendatei</span>
+              <span style="background:#E6EEF8;color:#004899;border:1px solid #C5D8F0;border-radius:16px;padding:3px 10px;font-size:10px;font-weight:600">🩺 Diagnosedatei</span>
+              <span style="background:#E6EEF8;color:#004899;border:1px solid #C5D8F0;border-radius:16px;padding:3px 10px;font-size:10px;font-weight:600">⚙ Parameterdatei</span>
             </div>
             <div id="loadedBadges" style="display:none;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:10px"></div>
           </div>
@@ -5279,207 +5263,161 @@ function exportCSV() {
 document.addEventListener('dragover', ev => ev.preventDefault());
 
 
-
-// ══ LOGIN ══════════════════════════════════════════════════════════
-const PW_HASH = '6f4963299cc6d9e0f6144baab448ea930b5111e330bbe5cd94307626c4fd9902';
-const SESSION_KEY = 'afm-auth-v1';
-async function doLogin(e) {
-  e.preventDefault();
-  const pw = document.getElementById('loginPw').value;
-  const btn = document.getElementById('loginBtn');
-  const inp = document.getElementById('loginPw');
-  const err = document.getElementById('loginErr');
-  if (!pw) return;
-  btn.disabled = true; btn.textContent = '…';
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
-  const hash = Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-  if (hash === PW_HASH) {
-    sessionStorage.setItem(SESSION_KEY, '1');
-    const s = document.getElementById('loginScreen');
-    s.style.transition = 'opacity 0.3s'; s.style.opacity = '0';
-    setTimeout(() => s.style.display = 'none', 300);
-  } else {
-    inp.classList.add('shake'); err.classList.add('show');
-    inp.value = ''; inp.focus();
-    btn.disabled = false; btn.textContent = 'Anmelden';
-    setTimeout(() => inp.classList.remove('shake'), 400);
-  }
-}
-document.getElementById('loginPw')?.addEventListener('keydown', e => { if(e.key==='Enter') doLogin(e); });
-(function(){ if(sessionStorage.getItem(SESSION_KEY)==='1') document.getElementById('loginScreen').style.display='none'; })();
-
-// ══ MULTI-FILE DROP ═════════════════════════════════════════════════
-function classifyFile(file) {
-  const n = file.name.toLowerCase();
-  if (n.endsWith('_params.txt') || n.endsWith('.json')) return 'params';
-  if (n.includes('-diag_') || n.includes('_diag_') || n.includes('-diag.')) return 'diag';
-  if (n.endsWith('.csv')) return 'data';
-  if (n.endsWith('.txt')) return 'params';
-  return 'unknown';
-}
-
-function updateLoadedBadge(type, filename) {
-  const container = document.getElementById('loadedBadges');
-  if (!container) return;
-  container.style.display = 'flex';
-  const existing = container.querySelector('[data-type="' + type + '"]');
-  if (existing) existing.remove();
-  const icons = { data:'📊', diag:'🩺', params:'⚙' };
-  const labels = { data:'Datendatei', diag:'Diagnose', params:'Parameter' };
-  const badge = document.createElement('span');
-  badge.style.cssText = 'background:#E8F5E9;color:#2E7D32;border:1px solid #A5D6A7;border-radius:20px;padding:3px 10px;font-size:10px;font-weight:600';
-  badge.dataset.type = type;
-  badge.innerHTML = icons[type] + ' ' + labels[type] + ': <strong>' + filename + '</strong>';
-  container.appendChild(badge);
-}
-
-function handleMultiSelect(input) {
-  processMultiFiles(Array.from(input.files));
-}
-
-function handleMultiDrop(ev) {
-  ev.preventDefault();
-  document.getElementById('dropZone').classList.remove('dragover');
-  processMultiFiles(Array.from(ev.dataTransfer.files));
-}
-
-function processMultiFiles(files) {
-  if (!files.length) return;
-  const byType = { data:[], diag:[], params:[] };
-  files.forEach(f => {
-    const type = classifyFile(f);
-    if (byType[type]) byType[type].push(f);
-  });
-
-  const dataFile   = byType.data[0]   || null;
-  const diagFiles  = byType.diag;
-  const paramFiles = byType.params;
-
-  if (dataFile) {
-    updateLoadedBadge('data', dataFile.name);
-    // Load data file using FileReader directly (bypasses input.files restriction on Safari)
-    loadFileDirectly(dataFile, () => {
-      // After data loads, wait then load secondary files
-      if (diagFiles.length || paramFiles.length) {
-        setTimeout(() => {
-          diagFiles.forEach(f => { loadDiagFileDirectly(f); updateLoadedBadge('diag', f.name); });
-          paramFiles.forEach(f => { loadParamsFileDirectly(f); updateLoadedBadge('params', f.name); });
-        }, 1500);
-      }
-    });
-  } else {
-    // No data file - load others directly
-    diagFiles.forEach(f => { loadDiagFileDirectly(f); updateLoadedBadge('diag', f.name); });
-    paramFiles.forEach(f => { loadParamsFileDirectly(f); updateLoadedBadge('params', f.name); });
-    if (!diagFiles.length && !paramFiles.length && files.length) {
-      loadFileDirectly(files[0], () => {});
-    }
-  }
-}
-
-// Load data CSV directly from a File object with callback when done
-function loadFileDirectly(file, onDone) {
-  state.filename = file.name;
-  showLoading(true);
-  const reader = new FileReader();
-  reader.onerror = () => { showLoading(false); alert('Datei konnte nicht gelesen werden.'); };
-  reader.onload = e => {
-    try {
-      const normalised = detectAndNormalise(e.target.result);
-      const normText   = typeof normalised === 'string' ? normalised : normalised.text;
-      state.fileFormat = typeof normalised === 'string' ? 'monthly' : normalised.format;
-      const result = Papa.parse(normText, { header:true, skipEmptyLines:true, dynamicTyping:true });
-      if (!result.data || result.data.length === 0) {
-        showLoading(false); alert('CSV leer oder unbekanntes Format.'); return;
-      }
-      state.raw = result.data;
-      state.filtered = [...state.raw];
-      processData();
-      showLoading(false);
-      onDone();
-    } catch(err) {
-      showLoading(false);
-      alert('Fehler: ' + err.message);
-    }
-  };
-  reader.readAsText(file, 'UTF-8');
-}
-
-// Load diag CSV directly from a File object
-function loadDiagFileDirectly(file) {
-  showLoading(true);
-  const reader = new FileReader();
-  reader.onerror = () => { showLoading(false); };
-  reader.onload = e => {
-    try {
-      const result = Papa.parse(e.target.result, { header:true, skipEmptyLines:true, dynamicTyping:true });
-      if (!result.data || result.data.length === 0) { showLoading(false); return; }
-      state.diag = result.data;
-      state.diagFiltered = [...state.diag];
-      const cols = Object.keys(state.diag[0] || {});
-      const found = new Set();
-      cols.forEach(c => { const m = c.match(/^noisefwd_(\d+)$/); if(m) { const n = parseInt(m[1],10); if(state.diag.some(r=>r[c]!==null&&!isNaN(r[c]))) found.add(n); } });
-      state.diagPaths = [...found].sort((a,b)=>a-b);
-      state.diagActivePaths = [...state.diagPaths];
-      state.diagSelectedPath = state.diagPaths[0] || 1;
-      document.getElementById('diagDropZone').style.display = 'none';
-      document.getElementById('diagContent').style.display = 'block';
-      const diagBadge = document.getElementById('diagLoadedBadge');
-      if (diagBadge) diagBadge.style.display = 'inline';
-      showLoading(false);
-    } catch(err) { showLoading(false); }
-  };
-  reader.readAsText(file, 'UTF-8');
-}
-
-// Load params JSON directly from a File object  
-function loadParamsFileDirectly(file) {
-  const reader = new FileReader();
-  reader.onerror = () => {};
-  reader.onload = e => {
-    try {
-      state.params = JSON.parse(e.target.result);
-      document.getElementById('paramsDropZone').style.display = 'none';
-      document.getElementById('paramsContent').style.display = 'block';
-      const badge = document.getElementById('paramsDeviceBadge');
-      if (badge && state.params.Overview) {
-        badge.textContent = (state.params.Overview.type||'') + ' · ' + (state.params.Overview.serialno||'');
-        badge.style.display = 'inline';
-      }
-      updateDeviceCardWithParams();
-    } catch(err) {}
-  };
-  reader.readAsText(file, 'UTF-8');
-}
-
-// ══ SERVICE WORKER ══════════════════════════════════════════════════
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));
-}
-console.log('%c AFM Data Analyser v1.0.0 — GWF Technologies ','background:#004899;color:white;padding:3px 10px;border-radius:3px;font-weight:bold');
-
 </script>
 
 <div id="loginScreen">
-  <div class="login-card">
-    <div class="login-logo">
-      <div class="login-logo-mark">AFM</div>
-      <div>
-        <div class="login-logo-name">AFM Data Analyser</div>
-        <div class="login-logo-sub">GWF Technologies</div>
-      </div>
-    </div>
-    <div class="login-divider"></div>
-    <div class="login-heading">Anmeldung erforderlich</div>
-    <div class="login-sub">Passwort eingeben um fortzufahren</div>
+  <div class="lcard">
+    <div class="lmark">AFM</div>
+    <div class="lname">AFM Data Analyser</div>
+    <div class="lsub">GWF Technologies</div>
+    <div class="ldiv"></div>
+    <div class="lhead">Anmeldung erforderlich</div>
+    <div class="lsub">Passwort eingeben um fortzufahren</div>
     <form onsubmit="doLogin(event)">
-      <label class="login-label">Passwort</label>
-      <input type="password" id="loginPw" class="login-input" placeholder="••••••••" autofocus>
-      <div class="login-error" id="loginErr">Falsches Passwort. Bitte erneut versuchen.</div>
-      <button type="submit" class="login-btn" id="loginBtn">Anmelden</button>
+      <label class="llbl">Passwort</label>
+      <input type="password" id="loginPw" class="linp" placeholder="••••••••" autofocus>
+      <div class="lerr" id="loginErr">Falsches Passwort.</div>
+      <button type="submit" class="lbtn" id="loginBtn">Anmelden</button>
     </form>
-    <div class="login-footer">AFM Data Analyser v1.0.0 · gwf-group.com</div>
+    <div class="lfoot">v1.0.0 · gwf-group.com</div>
   </div>
 </div>
+
+<script>
+// LOGIN
+const _PW = '6f4963299cc6d9e0f6144baab448ea930b5111e330bbe5cd94307626c4fd9902';
+const _SK = 'afm1';
+async function doLogin(e) {
+  e.preventDefault();
+  const pw=document.getElementById('loginPw').value;
+  const btn=document.getElementById('loginBtn');
+  const inp=document.getElementById('loginPw');
+  const err=document.getElementById('loginErr');
+  if(!pw) return;
+  btn.disabled=true; btn.textContent='…';
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pw));
+  const h=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  if(h===_PW){
+    sessionStorage.setItem(_SK,'1');
+    const s=document.getElementById('loginScreen');
+    s.style.transition='opacity 0.3s';s.style.opacity='0';
+    setTimeout(()=>s.style.display='none',300);
+  }else{
+    inp.classList.add('lshake');err.classList.add('show');
+    inp.value='';inp.focus();
+    btn.disabled=false;btn.textContent='Anmelden';
+    setTimeout(()=>inp.classList.remove('lshake'),400);
+  }
+}
+document.getElementById('loginPw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin(e);});
+if(sessionStorage.getItem(_SK)==='1') document.getElementById('loginScreen').style.display='none';
+
+// MULTI-FILE DROP
+function _classify(f){
+  const n=f.name.toLowerCase();
+  if(n.endsWith('_params.txt')||n.endsWith('.json')) return 'params';
+  if(n.includes('-diag_')||n.includes('_diag_')) return 'diag';
+  if(n.endsWith('.csv')) return 'data';
+  if(n.endsWith('.txt')) return 'params';
+  return 'data';
+}
+function _badge(type,name){
+  const c=document.getElementById('loadedBadges');
+  if(!c) return;
+  c.style.display='flex';
+  const ex=c.querySelector('[data-t="'+type+'"]');
+  if(ex) ex.remove();
+  const b=document.createElement('span');
+  b.dataset.t=type;
+  b.style.cssText='background:#E8F5E9;color:#2E7D32;border:1px solid #A5D6A7;border-radius:14px;padding:3px 10px;font-size:10px;font-weight:600';
+  const icons={data:'📊',diag:'🩺',params:'⚙'};
+  b.innerHTML=icons[type]+' '+name;
+  c.appendChild(b);
+}
+function handleMultiSelect(inp){ _processFiles(Array.from(inp.files)); }
+function handleMultiDrop(ev){
+  ev.preventDefault();
+  document.getElementById('dropZone').classList.remove('dragover');
+  _processFiles(Array.from(ev.dataTransfer.files));
+}
+function _readAndLoad(file, onDone){
+  // Read file and load using existing loadFile machinery
+  state.filename=file.name;
+  showLoading(true);
+  const r=new FileReader();
+  r.onerror=()=>{showLoading(false);};
+  r.onload=e=>{
+    try{
+      const norm=detectAndNormalise(e.target.result);
+      const txt=typeof norm==='string'?norm:norm.text;
+      state.fileFormat=typeof norm==='string'?'monthly':norm.format;
+      const res=Papa.parse(txt,{header:true,skipEmptyLines:true,dynamicTyping:true});
+      if(!res.data||!res.data.length){showLoading(false);alert('CSV leer.');return;}
+      state.raw=res.data;
+      state.filtered=[...state.raw];
+      processData();
+      showLoading(false);
+      if(onDone) onDone();
+    }catch(err){showLoading(false);alert('Fehler: '+err.message);}
+  };
+  r.readAsText(file,'UTF-8');
+}
+function _readAndLoadDiag(file){
+  const r=new FileReader();
+  r.onerror=()=>{};
+  r.onload=e=>{
+    try{
+      const res=Papa.parse(e.target.result,{header:true,skipEmptyLines:true,dynamicTyping:true});
+      if(!res.data||!res.data.length) return;
+      state.diag=res.data;state.diagFiltered=[...res.data];
+      const cols=Object.keys(res.data[0]||{});
+      const found=new Set();
+      cols.forEach(c=>{const m=c.match(/^noisefwd_(\d+)$/);if(m){const n=parseInt(m[1]);if(res.data.some(r=>r[c]!==null&&!isNaN(r[c])))found.add(n);}});
+      state.diagPaths=[...found].sort((a,b)=>a-b);
+      state.diagActivePaths=[...state.diagPaths];
+      state.diagSelectedPath=state.diagPaths[0]||1;
+      document.getElementById('diagDropZone').style.display='none';
+      document.getElementById('diagContent').style.display='block';
+      const db=document.getElementById('diagLoadedBadge');if(db)db.style.display='inline';
+    }catch(e){}
+  };
+  r.readAsText(file,'UTF-8');
+}
+function _readAndLoadParams(file){
+  const r=new FileReader();
+  r.onerror=()=>{};
+  r.onload=e=>{
+    try{
+      state.params=JSON.parse(e.target.result);
+      document.getElementById('paramsDropZone').style.display='none';
+      document.getElementById('paramsContent').style.display='block';
+      const b=document.getElementById('paramsDeviceBadge');
+      if(b&&state.params.Overview){b.textContent=(state.params.Overview.type||'')+' · '+(state.params.Overview.serialno||'');b.style.display='inline';}
+      updateDeviceCardWithParams();
+    }catch(e){}
+  };
+  r.readAsText(file,'UTF-8');
+}
+function _processFiles(files){
+  if(!files.length) return;
+  const by={data:[],diag:[],params:[]};
+  files.forEach(f=>{const t=_classify(f);if(by[t])by[t].push(f);});
+  const df=by.data[0]||null;
+  if(df){
+    _badge('data',df.name);
+    _readAndLoad(df,()=>{
+      setTimeout(()=>{
+        by.diag.forEach(f=>{_badge('diag',f.name);_readAndLoadDiag(f);});
+        by.params.forEach(f=>{_badge('params',f.name);_readAndLoadParams(f);});
+      },1500);
+    });
+  }else{
+    by.diag.forEach(f=>{_badge('diag',f.name);_readAndLoadDiag(f);});
+    by.params.forEach(f=>{_badge('params',f.name);_readAndLoadParams(f);});
+    if(!by.diag.length&&!by.params.length&&files.length)_readAndLoad(files[0],()=>{});
+  }
+}
+if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+</script>
 </body>
 </html>
