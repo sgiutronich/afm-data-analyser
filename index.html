@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
-<title>AFM Data Analyser | GWF Technologies</title>
+<title>AFM Data Analyser | GWF</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
@@ -5071,7 +5071,7 @@ function renderAnalysisTab(tab) {
   if (tab === 'errors') {
     const bi = (de, en) => currentLang === 'en' ? en : de;
     const errTable = [
-      [0,  'failure',    bi(bi('Allgemeiner Systemfehler','General system failure'),'General system failure'),                    bi(bi('GWF Technologies kontaktieren','Contact GWF Technologies'),'Contact GWF Technologies')],
+      [0,  'failure',    bi(bi('Allgemeiner Systemfehler','General system failure'),'General system failure'),                    bi(bi('GWF kontaktieren','Contact GWF'),'Contact GWF')],
       [2,  'w water',    bi(bi('Fehler Wasserstandsmessung (hydrostatisch)','Water level measurement failure (hydrostatic)'),'Water level measurement failure (hydrostatic)'),   bi(bi('Sensor und Verkabelung prüfen','Check sensor and wiring'),'Check sensor and wiring')],
       [6,  'water level',bi(bi('Fehler Ultraschall-Wasserstand','Ultrasonic water level failure'),'Ultrasonic water level failure'),              bi(bi('Sensor und Verkabelung prüfen','Check sensor and wiring'),'Check sensor and wiring')],
       [9,  'path 1',     bi('Fehler Messpfad 1','Measurement path 1 failure'),                          bi(bi('Transducer, Kabel, Ausrichtung, Reinigung','Check transducers, cable, alignment, clean'),'Check transducers, cable, alignment, cleaning')],
@@ -5348,7 +5348,7 @@ if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.se
   <div class="lcard">
     <div class="lmark">AFM</div>
     <div class="lname">AFM Data Analyser</div>
-    <div class="lsub2">GWF Technologies</div>
+    <div class="lsub2">GWF</div>
     <div class="ldiv"></div>
     <div class="lhead">Passwort eingeben</div>
     <form onsubmit="doLogin(event)">
@@ -5356,7 +5356,7 @@ if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.se
       <div class="lerr" id="loginErr">Falsches Passwort.</div>
       <button type="submit" class="lbtn" id="loginBtn">Anmelden</button>
     </form>
-    <div class="lfoot">AFM Data Analyser v1.0.0 · GWF Technologies</div>
+    <div class="lfoot">AFM Data Analyser v1.0.0 · GWF</div>
   </div>
 </div>
 </body>
