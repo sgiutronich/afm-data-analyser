@@ -1950,7 +1950,7 @@ function detectAndNormalise(rawText) {
 
 // ===================== FILE LOADING =====================
 function loadFile(input) {
-  const file = input.files[0];
+  const file = (input instanceof File) ? input : input.files[0];
   if (!file) return;
   state.filename = file.name;
   showLoading(true);
@@ -2057,33 +2057,25 @@ function processMultiFiles(files) {
   if (byType.params.length) found.push(`${byType.params.length} ${bi('Parameterdatei(en)','param file(s)')}`);
   console.log('[AFM] Loading:', found.join(', '));
 
-  // Load each type
+  // Load each type — pass File objects directly (works on all browsers incl. Safari)
   byType.data.forEach(file => {
-    const dt = new DataTransfer(); dt.items.add(file);
-    const input = document.getElementById('fileInput');
-    if (input) { input.files = dt.files; loadFile(input); }
+    loadFile(file);
     updateLoadedBadge('data', file.name, true);
   });
 
   byType.diag.forEach(file => {
-    const dt = new DataTransfer(); dt.items.add(file);
-    const diagInput = document.getElementById('diagFileInput');
-    if (diagInput) { diagInput.files = dt.files; loadDiagFile(diagInput); }
+    loadDiagFile(file);
     updateLoadedBadge('diag', file.name, true);
   });
 
   byType.params.forEach(file => {
-    const dt = new DataTransfer(); dt.items.add(file);
-    const paramsInput = document.getElementById('paramsFileInput');
-    if (paramsInput) { paramsInput.files = dt.files; loadParamsFile(paramsInput); }
+    loadParamsFile(file);
     updateLoadedBadge('params', file.name, true);
   });
 
-  // If nothing recognised, fall back to single-file behaviour
+  // If nothing recognised, try loading first file as data
   if (!byType.data.length && !byType.diag.length && !byType.params.length && files.length) {
-    const dt = new DataTransfer(); dt.items.add(files[0]);
-    const input = document.getElementById('fileInput');
-    if (input) { input.files = dt.files; loadFile(input); }
+    loadFile(files[0]);
   }
 }
 
@@ -2129,7 +2121,7 @@ function addYSliderToCard(canvasId, label, color) {
 
 // ===================== PARAMS FILE =====================
 function loadParamsFile(input) {
-  const file = input.files[0];
+  const file = (input instanceof File) ? input : input.files[0];
   if (!file) return;
   const reader = new FileReader();
   reader.onerror = () => alert('Parameter-Datei konnte nicht gelesen werden.');
@@ -2197,7 +2189,7 @@ function updateDeviceCardWithParams() {
 // ===================== HARDWARE SETTINGS =====================
 
 function loadParamsFileHW(input) {
-  const file = input.files[0];
+  const file = (input instanceof File) ? input : input.files[0];
   if (!file) return;
   const reader = new FileReader();
   reader.onload = e => {
@@ -3110,7 +3102,7 @@ function showLoading(v) {
 
 // ===================== DIAG FILE LOADING =====================
 function loadDiagFile(input) {
-  const file = input.files[0];
+  const file = (input instanceof File) ? input : input.files[0];
   if (!file) return;
   showLoading(true);
   const reader = new FileReader();
