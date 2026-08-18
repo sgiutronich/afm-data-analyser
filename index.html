@@ -748,6 +748,55 @@
     font-family: var(--mono);
   }
 
+  /* PARAMETER x PATH MATRIX (Custom / Kombi-Grafik tab) */
+  table.param-matrix { border-collapse: collapse; font-size: 11px; width: 100%; }
+  table.param-matrix th, table.param-matrix td { padding: 4px 6px; text-align: center; }
+  table.param-matrix thead th {
+    font-weight: 700; cursor: pointer; user-select: none; padding-bottom: 8px;
+    border-bottom: 1.5px solid var(--border); font-family: var(--mono); color: var(--text2);
+  }
+  table.param-matrix thead th:hover { text-decoration: underline; }
+  table.param-matrix thead th.corner { cursor: default; }
+  table.param-matrix thead th.corner:hover { text-decoration: none; }
+  table.param-matrix tbody th {
+    text-align: left; font-weight: 500; white-space: nowrap; cursor: pointer; user-select: none;
+    display: flex; align-items: center; gap: 6px; padding: 5px 6px; color: var(--text2);
+    font-family: var(--sans);
+  }
+  table.param-matrix tbody th:hover { color: var(--gwf-blue); }
+  table.param-matrix tbody tr:nth-child(odd) { background: var(--surface2); }
+  .row-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .matrix-cell {
+    width: 18px; height: 18px; border-radius: 4px; margin: 0 auto;
+    border: 2px solid var(--border); cursor: pointer; transition: all 0.1s;
+  }
+  .matrix-cell.active { background: var(--c); border-color: var(--c); }
+  .matrix-cell.disabled { cursor: not-allowed; opacity: 0.25; border-style: dashed; }
+  .matrix-cell:not(.disabled):hover { border-color: var(--c); }
+
+  .pair-cell { display: flex; gap: 2px; justify-content: center; cursor: pointer; }
+  .pair-cell.disabled { cursor: not-allowed; }
+  .matrix-subcell {
+    width: 11px; height: 18px; border-radius: 3px; border: 2px solid var(--border);
+    cursor: pointer; font-size: 8px; font-weight: 700; color: var(--text3);
+    display: flex; align-items: center; justify-content: center; transition: all 0.1s;
+    font-family: var(--sans);
+  }
+  .matrix-subcell.active { background: var(--c); border-color: var(--c); color: #fff; }
+  .matrix-subcell.disabled { cursor: not-allowed; opacity: 0.3; border-style: dashed; }
+  .matrix-subcell:not(.disabled):hover { border-color: var(--c); }
+
+  .group-label { font-size: 10px; color: var(--gwf-blue); font-weight: 700; margin: 10px 0 4px; }
+  .toggle-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+
+  .preset-chip {
+    display: flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 600;
+    padding: 5px 10px; border-radius: 14px; border: 1.5px solid var(--gwf-blue);
+    background: var(--gwf-blue-light); color: var(--gwf-blue); cursor: pointer; user-select: none;
+  }
+  .preset-chip:hover { background: var(--gwf-blue); color: #fff; }
+  .preset-del { opacity: 0.55; font-weight: 700; cursor: pointer; }
+  .preset-del:hover { opacity: 1; color: #C62828; }
 
 
   #loginScreen{position:fixed;inset:0;z-index:10000;background:linear-gradient(145deg,#001F52,#003380,#004A9A);display:flex;align-items:center;justify-content:center}
@@ -820,6 +869,9 @@
       </div>
       <div class="nav-item" data-view="signal" onclick="switchView('signal',this)">
         <span class="nav-icon">📡</span> <span data-i18n="nav_signal">Signalqualität</span>
+      </div>
+      <div class="nav-item" data-view="custom" onclick="switchView('custom',this)">
+        <span class="nav-icon">🧩</span> <span data-i18n="nav_custom">Kombi-Grafik</span>
       </div>
       <div class="nav-item" data-view="diag" onclick="switchView('diag',this)">
         <span class="nav-icon">🩺</span> <span data-i18n="nav_diag">Diagnose-Daten</span>
@@ -1187,6 +1239,50 @@
         </div>
       </div>
 
+      <!-- ===================== KOMBI-GRAFIK (CUSTOM) ===================== -->
+      <div class="view" id="view-custom">
+        <div class="view-res-bar">
+          <select class="select-input" id="res-custom" onchange="renderCustomChart()">
+            <option value="all" data-i18n-opt="res_all">5 min</option>
+            <option value="hourly" selected data-i18n-opt="res_hourly">Stündlich</option>
+            <option value="daily" data-i18n-opt="res_daily">Täglich</option>
+          </select>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title" data-i18n="chart_custom_title">Kombinierte Grafik – frei wählbar</div>
+              <div class="chart-sub" data-i18n="chart_custom_sub">Beliebige Parameter über beliebige Pfade gemeinsam darstellen</div>
+            </div>
+            <div class="zoom-toolbar"><button class="zoom-btn" id="zoom-reset-chartCustom" onclick="resetZoom('chartCustom')">⟳</button></div>
+          </div>
+
+          <div style="margin-bottom:6px;font-size:11px;color:var(--text3);font-weight:500" data-i18n="lbl_presets">Gespeicherte Auswahl</div>
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+            <input id="presetNameInput" type="text" data-i18n-placeholder="ph_preset_name" placeholder="Name der Auswahl..."
+              style="font-size:12px;padding:5px 10px;border-radius:6px;border:1px solid var(--border);flex:1;min-width:140px;max-width:240px">
+            <button onclick="customHandleSavePreset()" data-i18n="btn_save_preset"
+              style="font-size:12px;padding:5px 14px;border-radius:6px;border:1.5px solid var(--gwf-blue);background:var(--gwf-blue);color:#fff;cursor:pointer;font-weight:600">+ Speichern</button>
+          </div>
+          <div id="presetsList" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px"></div>
+
+          <div style="margin-bottom:6px;font-size:11px;color:var(--text3);font-weight:500" data-i18n="lbl_global_params">Globale Parameter</div>
+          <div id="customTogglesGlobal"></div>
+          <div style="margin:12px 0 6px;font-size:11px;color:var(--text3);font-weight:500">
+            <span data-i18n="lbl_per_path_params">Parameter pro Pfad</span>
+            &nbsp;<span style="font-weight:400" data-i18n="lbl_matrix_hint">(Zeile / Spalte anklicken = alle umschalten)</span>
+          </div>
+          <div style="overflow-x:auto"><div id="customMatrix"></div></div>
+          <div class="chart-wrap multi" style="margin-top:12px">
+            <canvas id="chartCustom"></canvas>
+          </div>
+          <div id="slider-chartCustom" class="chart-slider-outer"></div>
+          <div style="margin-top:8px;display:flex;gap:12px;flex-wrap:wrap;font-size:10px;color:var(--text3)">
+            <span>🖱 Scrollen = Zoom · Klicken &amp; Ziehen = Bereich wählen · Doppelklick = Zurücksetzen</span>
+          </div>
+        </div>
+      </div>
+
       <!-- ===================== DIAGNOSE-DATEN ===================== -->
       <div class="view" id="view-diag">
         <div id="diagDropZone" style="border:2px dashed var(--border);border-radius:8px;padding:36px 24px;text-align:center;background:var(--surface);cursor:pointer;transition:all 0.2s"
@@ -1425,6 +1521,14 @@ const TRANSLATIONS = {
     nav_overview:'Übersicht', nav_hauptdaten:'Hauptdaten', nav_flow:'Durchfluss',
     nav_level:'Wasserstand', nav_velocity:'Geschwindigkeit', nav_signal:'Signalqualität',
     nav_diag:'Diagnose-Daten', nav_analysis:'Analyse', nav_params:'Geräteparameter', nav_rawdata:'Rohdaten',
+    nav_custom:'Kombi-Grafik',
+    chart_custom_title:'Kombinierte Grafik – frei wählbar', chart_custom_sub:'Beliebige Parameter über beliebige Pfade gemeinsam darstellen',
+    lbl_paths:'Pfade:', lbl_global_params:'Globale Parameter', lbl_per_path_params:'Parameter pro Pfad',
+    lbl_matrix_hint:'(Zeile / Spalte anklicken = alle umschalten)',
+    tt_col:'Ganze Spalte umschalten', tt_row:'Ganze Zeile umschalten', tt_unavailable:'Nicht im Dateiexport enthalten',
+    tt_path_color:'Pfad-Farbe ändern', tt_pair_both:'Klick = beide, F/R = einzeln',
+    lbl_presets:'Gespeicherte Auswahl', ph_preset_name:'Name der Auswahl...', btn_save_preset:'+ Speichern',
+    tt_preset_delete:'Auswahl löschen', confirm_preset_delete:'Auswahl "{name}" wirklich löschen?',
     btn_load_csv:'CSV laden', btn_load_diag:'Diagnose laden', btn_load_params:'Parameter laden',
     btn_export:'Export', btn_prev:'← Zurück', btn_next:'Weiter →',
     title_overview:'Übersicht', title_hauptdaten:'Hauptdaten', title_flow:'Durchfluss',
@@ -1573,6 +1677,14 @@ const TRANSLATIONS = {
     nav_overview:'Overview', nav_hauptdaten:'Main Data', nav_flow:'Flow',
     nav_level:'Water Level', nav_velocity:'Velocity', nav_signal:'Signal Quality',
     nav_diag:'Diagnostics', nav_analysis:'Analysis', nav_params:'Device Parameters', nav_rawdata:'Raw Data',
+    nav_custom:'Combo Chart',
+    chart_custom_title:'Combined Chart – Fully Customizable', chart_custom_sub:'Overlay any parameters across any paths',
+    lbl_paths:'Paths:', lbl_global_params:'Global Parameters', lbl_per_path_params:'Per-Path Parameters',
+    lbl_matrix_hint:'(click a row/column label to toggle all)',
+    tt_col:'Toggle entire column', tt_row:'Toggle entire row', tt_unavailable:'Not in this file export',
+    tt_path_color:'Change path colour', tt_pair_both:'Click = both, F/R = individually',
+    lbl_presets:'Saved Selections', ph_preset_name:'Selection name...', btn_save_preset:'+ Save',
+    tt_preset_delete:'Delete selection', confirm_preset_delete:'Really delete selection "{name}"?',
     btn_load_csv:'Load CSV', btn_load_diag:'Load Diagnostics', btn_load_params:'Load Parameters',
     btn_export:'Export', btn_prev:'← Back', btn_next:'Next →',
     title_overview:'Overview', title_hauptdaten:'Main Data', title_flow:'Flow',
@@ -1743,6 +1855,11 @@ function setLang(lang) {
     const key = el.getAttribute('data-i18n-opt');
     const val = t(key);
     if (val && val !== key) el.textContent = val;
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    const val = t(key);
+    if (val && val !== key) el.placeholder = val;
   });
   // Page title
   document.title = lang === 'en'
@@ -3213,8 +3330,11 @@ function processData() {
   state.activePaths = [...state.detectedPaths];
   state.selectedSignalPath = state.detectedPaths[0] || 1;
   state.activeSignalSeries = null; // will be auto-set in renderSignal based on available cols
-
-  // Parse timestamps
+  if (!state.customCells) {
+    const initCustom = loadCustomMatrixState();
+    state.customCells = initCustom.cells;
+    state.customGlobal = initCustom.globals;
+  }
   state.raw.forEach(r => {
     if (r.TimeStamp) {
       r._ts = new Date(r.TimeStamp.replace(/\//g, '-'));
@@ -3301,6 +3421,7 @@ function renderCurrentView() {
     case 'level': renderLevel(); break;
     case 'velocity': renderVelocity(); break;
     case 'signal': renderSignal(); break;
+    case 'custom': renderCustom(); break;
     case 'diag': if (state.diag.length) renderDiag(); break;
     case 'params': if (state.params) renderParams(); break;
     case 'hardware': renderHardware(); break;
@@ -4539,6 +4660,710 @@ function renderPathSignalChart() {
   };
 }
 
+// ===================== CUSTOM COMBINED CHART (Parameter x Path Matrix) =====================
+// Global (non per-path) series, grouped for display
+const CUSTOM_GLOBAL_GROUPS = [
+  {
+    groupKey: 'flow',
+    series: [
+      { id: 'Q',           field: () => 'Q',           unit: 'm³/s', color: '#1E88E5' },
+      { id: 'TotalVolume', field: () => 'TotalVolume', unit: 'm³',   color: '#1565C0' },
+      { id: 'Volume',      field: () => 'Volume',      unit: 'm³',   color: '#1976D2' },
+      { id: 'VolumeAbs',   field: () => 'VolumeAbs',   unit: 'm³',   color: '#42A5F5' },
+      { id: 'VolumeNeg',   field: () => 'VolumeNeg',   unit: 'm³',   color: '#90CAF9' },
+      { id: 'VolumePos',   field: () => 'VolumePos',   unit: 'm³',   color: '#0D47A1' },
+      { id: 'DVol',        field: () => 'DVol',        unit: 'm³',   color: '#00838F' },
+      { id: 'DVolAbs',     field: () => 'DVolAbs',     unit: 'm³',   color: '#00ACC1' },
+      { id: 'DVolNeg',     field: () => 'DVolNeg',     unit: 'm³',   color: '#4DD0E1' },
+      { id: 'DVolPos',     field: () => 'DVolPos',     unit: 'm³',   color: '#00695C' },
+    ]
+  },
+  {
+    groupKey: 'level',
+    series: [
+      { id: 'H',            field: () => 'H',            unit: 'm', color: '#00897B' },
+      { id: 'H_external1',  field: () => 'H_external1',  unit: 'm', color: '#26A69A' },
+      { id: 'H_external2',  field: () => 'H_external2',  unit: 'm', color: '#66BB6A' },
+      { id: 'H_external3',  field: () => 'H_external3',  unit: 'm', color: '#9CCC65' },
+      { id: 'H_external4',  field: () => 'H_external4',  unit: 'm', color: '#AED581' },
+      { id: 'H_integrated', field: () => 'H_integrated', unit: 'm', color: '#7CB342' },
+    ]
+  },
+  {
+    groupKey: 'velocity',
+    series: [
+      { id: 'vm', field: () => 'vm', unit: 'm/s', color: '#E8A000' },
+      { id: 'c',  field: () => 'c',  unit: 'm/s', color: '#546E7A' },
+    ]
+  },
+  {
+    groupKey: 'device',
+    series: [
+      { id: 'A',        field: () => 'A',        unit: 'm²',  color: '#8D6E63' },
+      { id: 'T',        field: () => 'T',        unit: '°C',  color: '#EF6C00' },
+      { id: 'Signal',   field: () => 'Signal',   unit: 'dB',  color: '#5E35B1' },
+      { id: 'GsmSig',   field: () => 'GsmSig',   unit: '?',   color: '#8E24AA' },
+      { id: 'STATUS',   field: () => 'STATUS',   unit: '',    color: '#C62828' },
+      { id: 'OpHCount', field: () => 'OpHCount', unit: 'h',   color: '#6D4C41' },
+    ]
+  }
+];
+const CUSTOM_GLOBAL_SERIES = CUSTOM_GLOBAL_GROUPS.flatMap(g => g.series);
+
+// Per-path series (rows in the matrix, before Fwd/Rev pairing)
+const CUSTOM_PATH_SERIES = [
+  { id: 'vLayer',      field: p => pathCol('vLayer_',      p), unit: 'm/s' },
+  { id: 'Qp',          field: p => pathCol('Q_',           p), unit: 'm³/s' },
+  { id: 'Vfwd',        field: p => pathCol('Vfwd_',        p), unit: 'V' },
+  { id: 'Vrev',        field: p => pathCol('Vrev_',        p), unit: 'V' },
+  { id: 'cPath',       field: p => pathCol('cPath_',       p), unit: 'm/s' },
+  { id: 'snrfwd',      field: p => pathCol('snrfwd_',      p), unit: 'dB' },
+  { id: 'snrrev',      field: p => pathCol('snrrev_',      p), unit: 'dB' },
+  { id: 'gainfwd',     field: p => pathCol('gainfwd_',     p), unit: 'dB' },
+  { id: 'gainrev',     field: p => pathCol('gainrev_',     p), unit: 'dB' },
+  { id: 'corrfwd',     field: p => pathCol('corrfwd_',     p), unit: '%' },
+  { id: 'corrrev',     field: p => pathCol('corrrev_',     p), unit: '%' },
+  { id: 'dtt',         field: p => pathCol('dtt_',         p), unit: 'µs', scale: 1e6 },
+  { id: 'meantt',      field: p => pathCol('meantt_',      p), unit: 's' },
+  { id: 'ttfwd',       field: p => pathCol('ttfwd_',       p), unit: 's' },
+  { id: 'ttrev',       field: p => pathCol('ttrev_',       p), unit: 's' },
+  { id: 'noiselimfwd', field: p => pathCol('noiselimfwd_', p), unit: '%' },
+  { id: 'noiselimrev', field: p => pathCol('noiselimrev_', p), unit: '%' },
+  { id: 'STATUSp',     field: p => pathCol('STATUS_',      p), unit: '' },
+];
+function customFindSeries(id) { return CUSTOM_PATH_SERIES.find(s => s.id === id); }
+
+// Bilingual labels — kept separate from the main TRANSLATIONS dict since these
+// are keyed by parameter id rather than a static UI string.
+const CUSTOM_SERIES_LABELS = {
+  Q: { de: 'Q (gesamt)', en: 'Q (total)' },
+  TotalVolume: { de: 'Gesamtvolumen', en: 'Total Volume' },
+  Volume: { de: 'Volumen', en: 'Volume' },
+  VolumeAbs: { de: 'Volumen Abs', en: 'Volume Abs' },
+  VolumeNeg: { de: 'Volumen Neg', en: 'Volume Neg' },
+  VolumePos: { de: 'Volumen Pos', en: 'Volume Pos' },
+  DVol: { de: 'Tagesvolumen', en: 'Daily Volume' },
+  DVolAbs: { de: 'Tagesvolumen Abs', en: 'Daily Volume Abs' },
+  DVolNeg: { de: 'Tagesvolumen Neg', en: 'Daily Volume Neg' },
+  DVolPos: { de: 'Tagesvolumen Pos', en: 'Daily Volume Pos' },
+  H: { de: 'H (Pegel)', en: 'H (Level)' },
+  H_external1: { de: 'H Extern 1', en: 'H External 1' },
+  H_external2: { de: 'H Extern 2', en: 'H External 2' },
+  H_external3: { de: 'H Extern 3', en: 'H External 3' },
+  H_external4: { de: 'H Extern 4', en: 'H External 4' },
+  H_integrated: { de: 'H Integriert', en: 'H Integrated' },
+  vm: { de: 'vm (Mittelwert)', en: 'vm (mean)' },
+  c: { de: 'c (mittl. Schallgeschw.)', en: 'c (mean SoS)' },
+  A: { de: 'A (Querschnitt)', en: 'A (Cross-section)' },
+  T: { de: 'T (Temperatur)', en: 'T (Temperature)' },
+  Signal: { de: 'Signal (Signalstärke)', en: 'Signal (signal strength)' },
+  GsmSig: { de: 'GSM-Signal', en: 'GSM Signal' },
+  STATUS: { de: 'Status (global, nur intern)', en: 'Status (global, internal use)' },
+  OpHCount: { de: 'Betriebsstunden (Handbuch: h)', en: 'Operating Hours (manual: h)' },
+  vLayer: { de: 'Geschwindigkeit', en: 'Velocity' },
+  Vfwd: { de: 'V Fwd (Empfangssignalstärke)', en: 'V Fwd (receive signal strength)' },
+  Vrev: { de: 'V Rev (Empfangssignalstärke)', en: 'V Rev (receive signal strength)' },
+  Qp: { de: 'Durchfluss', en: 'Flow' },
+  cPath: { de: 'Schallgeschwindigkeit', en: 'Speed of Sound' },
+  snrfwd: { de: 'SNR Vorwärts', en: 'SNR Fwd' },
+  snrrev: { de: 'SNR Rückwärts', en: 'SNR Rev' },
+  gainfwd: { de: 'Gain Vorwärts', en: 'Gain Fwd' },
+  gainrev: { de: 'Gain Rückwärts', en: 'Gain Rev' },
+  corrfwd: { de: 'Korrelation Vorwärts', en: 'Corr Fwd' },
+  corrrev: { de: 'Korrelation Rückwärts', en: 'Corr Rev' },
+  dtt: { de: 'dtt (×10⁶)', en: 'dtt (×10⁶)' },
+  meantt: { de: 'Mittlere Laufzeit', en: 'Mean TT' },
+  ttfwd: { de: 'Laufzeit Vorwärts', en: 'TT Fwd' },
+  ttrev: { de: 'Laufzeit Rückwärts', en: 'TT Rev' },
+  noiselimfwd: { de: 'Rauschfenster Vorwärts', en: 'Noise Window Fwd' },
+  noiselimrev: { de: 'Rauschfenster Rückwärts', en: 'Noise Window Rev' },
+  STATUSp: { de: 'Status (nur intern)', en: 'Status (internal use)' },
+};
+function customSeriesLabel(id) { return (CUSTOM_SERIES_LABELS[id] && CUSTOM_SERIES_LABELS[id][currentLang]) || id; }
+
+const CUSTOM_GROUP_LABELS = {
+  flow:     { de: 'Durchfluss & Volumen', en: 'Flow & Volume' },
+  level:    { de: 'Pegel', en: 'Level' },
+  velocity: { de: 'Geschwindigkeit / Schall (Mittelwert)', en: 'Velocity / Sound (mean)' },
+  device:   { de: 'Gerät & Umgebung', en: 'Device & Environment' },
+};
+function customGroupLabel(key) { return (CUSTOM_GROUP_LABELS[key] && CUSTOM_GROUP_LABELS[key][currentLang]) || key; }
+
+const CUSTOM_PAIRED_LABELS = {
+  vsig:     { de: 'V (Signal Fwd/Rev)',      en: 'V (Signal Fwd/Rev)' },
+  snr:      { de: 'SNR (Fwd/Rev)',           en: 'SNR (Fwd/Rev)' },
+  gain:     { de: 'Gain (Fwd/Rev)',          en: 'Gain (Fwd/Rev)' },
+  corr:     { de: 'Korrelation (Fwd/Rev)',   en: 'Corr (Fwd/Rev)' },
+  tt:       { de: 'Laufzeit (Fwd/Rev)',      en: 'TT (Fwd/Rev)' },
+  noiselim: { de: 'Rauschfenster (Fwd/Rev)', en: 'Noise Window (Fwd/Rev)' },
+};
+function customPairedLabel(id) { return (CUSTOM_PAIRED_LABELS[id] && CUSTOM_PAIRED_LABELS[id][currentLang]) || id; }
+
+// Display rows: single parameters interleaved with merged Fwd/Rev pairs
+const CUSTOM_MATRIX_ROWS = [
+  { type: 'single', s: customFindSeries('vLayer') },
+  { type: 'single', s: customFindSeries('Qp') },
+  { type: 'paired', id: 'vsig',     fwd: customFindSeries('Vfwd'),        rev: customFindSeries('Vrev'),        unit: 'V' },
+  { type: 'single', s: customFindSeries('cPath') },
+  { type: 'paired', id: 'snr',      fwd: customFindSeries('snrfwd'),      rev: customFindSeries('snrrev'),      unit: 'dB' },
+  { type: 'paired', id: 'gain',     fwd: customFindSeries('gainfwd'),     rev: customFindSeries('gainrev'),     unit: 'dB' },
+  { type: 'paired', id: 'corr',     fwd: customFindSeries('corrfwd'),     rev: customFindSeries('corrrev'),     unit: '%' },
+  { type: 'single', s: customFindSeries('dtt') },
+  { type: 'single', s: customFindSeries('meantt') },
+  { type: 'paired', id: 'tt',       fwd: customFindSeries('ttfwd'),       rev: customFindSeries('ttrev'),       unit: 's' },
+  { type: 'paired', id: 'noiselim', fwd: customFindSeries('noiselimfwd'), rev: customFindSeries('noiselimrev'), unit: '%' },
+  { type: 'single', s: customFindSeries('STATUSp') },
+];
+
+// ---- Colour helpers: shift lightness/saturation of a path's hue per parameter row ----
+function customHexToHsl(hex) {
+  hex = hex.replace('#', '');
+  const r = parseInt(hex.substr(0, 2), 16) / 255;
+  const g = parseInt(hex.substr(2, 2), 16) / 255;
+  const b = parseInt(hex.substr(4, 2), 16) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h, s, l = (max + min) / 2;
+  if (max === min) { h = s = 0; }
+  else {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      default: h = (r - g) / d + 4;
+    }
+    h /= 6;
+  }
+  return [h * 360, s * 100, l * 100];
+}
+function customHslToHex(h, s, l) {
+  h /= 360; s /= 100; l /= 100;
+  let r, g, b;
+  if (s === 0) { r = g = b = l; }
+  else {
+    const hue2rgb = (p, q, t) => {
+      if (t < 0) t += 1; if (t > 1) t -= 1;
+      if (t < 1 / 6) return p + (q - p) * 6 * t;
+      if (t < 1 / 2) return q;
+      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+      return p;
+    };
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    r = hue2rgb(p, q, h + 1 / 3); g = hue2rgb(p, q, h); b = hue2rgb(p, q, h - 1 / 3);
+  }
+  const toHex = x => Math.round(x * 255).toString(16).padStart(2, '0');
+  return '#' + toHex(r) + toHex(g) + toHex(b);
+}
+const CUSTOM_L_OFFSETS = [0, -14, 12, -24, 20, -8, 8, -19, 17, -12, 11, -21, 15, -10, 9, -17, 13, -6];
+const CUSTOM_S_OFFSETS = [0, 10, -10, 15, -15, 6, -6, 13, -13, 8, -8, 16, -16, 5, -5, 11, -11, 7];
+
+// Path colour with optional per-user override (Custom tab only — does not
+// affect pathColor() used by the rest of the app).
+function customBasePathColor(p) {
+  if (state.customPathColors && state.customPathColors[p]) return state.customPathColors[p];
+  return pathColor(p).line;
+}
+function customPathParamColor(p, rowIdx) {
+  const base = customBasePathColor(p);
+  const [h, s, l] = customHexToHsl(base);
+  const newL = Math.min(80, Math.max(18, l + CUSTOM_L_OFFSETS[rowIdx % CUSTOM_L_OFFSETS.length]));
+  const newS = Math.min(95, Math.max(35, s + CUSTOM_S_OFFSETS[rowIdx % CUSTOM_S_OFFSETS.length]));
+  return customHslToHex(h, newS, newL);
+}
+
+const CUSTOM_DASH_PATTERNS = [[], [6,3], [2,2], [8,3,2,3], [10,4], [3,2,1,2]];
+const CUSTOM_STORAGE_KEY = 'afmCustomMatrix_v2';
+const CUSTOM_PATH_COLOR_KEY = 'afmCustomPathColors_v1';
+const CUSTOM_PRESETS_KEY = 'afmCustomPresets_v1';
+
+function loadCustomMatrixState() {
+  try {
+    const raw = localStorage.getItem(CUSTOM_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return { cells: new Set(parsed.cells || []), globals: new Set(parsed.globals || []) };
+    }
+  } catch (e) { /* localStorage unavailable — ignore */ }
+  // sensible first-run default: Velocity + SNR Fwd, all detected paths
+  const cells = new Set();
+  (state.detectedPaths || []).forEach(p => { cells.add('vLayer:' + p); cells.add('snrfwd:' + p); });
+  return { cells, globals: new Set() };
+}
+function saveCustomMatrixState() {
+  try { localStorage.setItem(CUSTOM_STORAGE_KEY, JSON.stringify({ cells: [...state.customCells], globals: [...state.customGlobal] })); }
+  catch (e) { /* localStorage unavailable — ignore */ }
+}
+function loadCustomPathColors() {
+  try {
+    const raw = localStorage.getItem(CUSTOM_PATH_COLOR_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) { /* ignore */ }
+  return {};
+}
+function saveCustomPathColors() {
+  try { localStorage.setItem(CUSTOM_PATH_COLOR_KEY, JSON.stringify(state.customPathColors)); }
+  catch (e) { /* ignore */ }
+}
+
+function customColAvailable(field) {
+  if (!state.filtered.length) return false;
+  return state.filtered.some(r => r[field] !== null && r[field] !== undefined && r[field] !== '' && !isNaN(parseFloat(r[field])));
+}
+
+function renderCustom() {
+  if (!state.customCells) {
+    const init = loadCustomMatrixState();
+    state.customCells = init.cells;
+    state.customGlobal = init.globals;
+  }
+  if (!state.customPathColors) state.customPathColors = loadCustomPathColors();
+  if (!state.customPresets) {
+    state.customPresets = loadCustomPresets();
+    customSeedDefaultPresetsIfEmpty();
+  }
+  buildCustomGlobalToggles();
+  buildCustomMatrix();
+  customBuildPresetsUI();
+  renderCustomChart();
+}
+
+// ---- Global parameter toggles (grouped) ----
+function buildCustomGlobalToggles() {
+  const wrap = document.getElementById('customTogglesGlobal');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  CUSTOM_GLOBAL_GROUPS.forEach(group => {
+    const gLabel = document.createElement('div');
+    gLabel.className = 'group-label';
+    gLabel.textContent = customGroupLabel(group.groupKey);
+    wrap.appendChild(gLabel);
+    const row = document.createElement('div');
+    row.className = 'toggle-row';
+    group.series.forEach(s => {
+      const available = customColAvailable(s.field());
+      const active = state.customGlobal.has(s.id) && available;
+      const tog = document.createElement('div');
+      tog.className = 'signal-toggle' + (active ? ' active' : ' inactive');
+      tog.style.color = available ? s.color : 'var(--text3)';
+      tog.style.borderColor = active ? s.color : 'var(--border)';
+      tog.style.opacity = available ? '1' : '0.4';
+      tog.style.cursor = available ? 'pointer' : 'not-allowed';
+      tog.title = available ? '' : t('tt_unavailable');
+      tog.innerHTML = `<span class="sig-dot" style="background:${available ? s.color : 'var(--text3)'}"></span>${customSeriesLabel(s.id)}<span class="y-axis-badge">${s.unit || '–'}</span>${available ? '' : ' <span style="font-size:9px">N/A</span>'}`;
+      if (available) {
+        tog.onclick = () => {
+          if (state.customGlobal.has(s.id)) state.customGlobal.delete(s.id);
+          else state.customGlobal.add(s.id);
+          saveCustomMatrixState();
+          buildCustomGlobalToggles();
+          renderCustomChart();
+        };
+      }
+      row.appendChild(tog);
+    });
+    wrap.appendChild(row);
+  });
+}
+
+// ---- Parameter x Path matrix ----
+function customRowAllOn(s) {
+  return state.detectedPaths.every(p => !customColAvailable(s.field(p)) || state.customCells.has(s.id + ':' + p));
+}
+function customToggleRowAll(s) {
+  const allOn = customRowAllOn(s);
+  state.detectedPaths.forEach(p => {
+    if (!customColAvailable(s.field(p))) return;
+    const key = s.id + ':' + p;
+    if (allOn) state.customCells.delete(key); else state.customCells.add(key);
+  });
+  saveCustomMatrixState();
+  buildCustomMatrix();
+  renderCustomChart();
+}
+function customColAllOn(p) {
+  return CUSTOM_PATH_SERIES.every(s => !customColAvailable(s.field(p)) || state.customCells.has(s.id + ':' + p));
+}
+function customToggleColAll(p) {
+  const allOn = customColAllOn(p);
+  CUSTOM_PATH_SERIES.forEach(s => {
+    if (!customColAvailable(s.field(p))) return;
+    const key = s.id + ':' + p;
+    if (allOn) state.customCells.delete(key); else state.customCells.add(key);
+  });
+  saveCustomMatrixState();
+  buildCustomMatrix();
+  renderCustomChart();
+}
+function customToggleCell(seriesId, p) {
+  const key = seriesId + ':' + p;
+  if (state.customCells.has(key)) state.customCells.delete(key); else state.customCells.add(key);
+  saveCustomMatrixState();
+  buildCustomMatrix();
+  renderCustomChart();
+}
+
+// ---- Fwd/Rev pair helpers ----
+function customPairAllOn(fwd, rev) {
+  return state.detectedPaths.every(p => {
+    const fwdOk = !customColAvailable(fwd.field(p)) || state.customCells.has(fwd.id + ':' + p);
+    const revOk = !customColAvailable(rev.field(p)) || state.customCells.has(rev.id + ':' + p);
+    return fwdOk && revOk;
+  });
+}
+function customTogglePairRowAll(fwd, rev) {
+  const allOn = customPairAllOn(fwd, rev);
+  state.detectedPaths.forEach(p => {
+    [fwd, rev].forEach(s => {
+      if (!customColAvailable(s.field(p))) return;
+      const key = s.id + ':' + p;
+      if (allOn) state.customCells.delete(key); else state.customCells.add(key);
+    });
+  });
+  saveCustomMatrixState();
+  buildCustomMatrix();
+  renderCustomChart();
+}
+function customTogglePairCell(fwd, rev, p) {
+  const fwdAvail = customColAvailable(fwd.field(p));
+  const revAvail = customColAvailable(rev.field(p));
+  const fwdKey = fwd.id + ':' + p, revKey = rev.id + ':' + p;
+  const bothOn = (!fwdAvail || state.customCells.has(fwdKey)) && (!revAvail || state.customCells.has(revKey));
+  if (bothOn) {
+    state.customCells.delete(fwdKey);
+    state.customCells.delete(revKey);
+  } else {
+    if (fwdAvail) state.customCells.add(fwdKey);
+    if (revAvail) state.customCells.add(revKey);
+  }
+  saveCustomMatrixState();
+  buildCustomMatrix();
+  renderCustomChart();
+}
+
+function buildCustomMatrix() {
+  const wrap = document.getElementById('customMatrix');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  const table = document.createElement('table');
+  table.className = 'param-matrix';
+
+  // Header row: corner + one column per PATH (with a colour picker)
+  const thead = document.createElement('thead');
+  const headRow = document.createElement('tr');
+  const corner = document.createElement('th');
+  corner.className = 'corner';
+  headRow.appendChild(corner);
+  state.detectedPaths.forEach(p => {
+    const th = document.createElement('th');
+    th.title = t('tt_col');
+    th.onclick = () => customToggleColAll(p);
+
+    const colorInput = document.createElement('input');
+    colorInput.type = 'color';
+    colorInput.value = customBasePathColor(p);
+    colorInput.title = t('tt_path_color');
+    colorInput.style.cssText = 'width:20px;height:16px;padding:0;border:1px solid var(--border);border-radius:3px;cursor:pointer;display:block;margin:0 auto 4px';
+    colorInput.onclick = e => e.stopPropagation();
+    colorInput.oninput = e => {
+      state.customPathColors[p] = e.target.value;
+      saveCustomPathColors();
+      buildCustomMatrix();
+      renderCustomChart();
+    };
+
+    const label = document.createElement('div');
+    label.textContent = 'P' + p;
+    label.style.color = customBasePathColor(p);
+
+    th.appendChild(colorInput);
+    th.appendChild(label);
+    headRow.appendChild(th);
+  });
+  thead.appendChild(headRow);
+  table.appendChild(thead);
+
+  // Body rows: one row per PARAMETER (or Fwd/Rev pair), hidden entirely if no data anywhere
+  const tbody = document.createElement('tbody');
+  let rowIdx = 0; // colour-shift index, consumed per rendered row (paired rows use 2 slots)
+
+  CUSTOM_MATRIX_ROWS.forEach(row => {
+    if (row.type === 'single') {
+      const s = row.s;
+      const hasAny = state.detectedPaths.some(p => customColAvailable(s.field(p)));
+      if (!hasAny) return; // hide entirely — not present in this file
+
+      const tr = document.createElement('tr');
+      const th = document.createElement('th');
+      th.innerHTML = `${customSeriesLabel(s.id)}<span class="y-axis-badge">${s.unit || '–'}</span>`;
+      th.title = t('tt_row');
+      th.onclick = () => customToggleRowAll(s);
+      tr.appendChild(th);
+
+      state.detectedPaths.forEach(p => {
+        const td = document.createElement('td');
+        const available = customColAvailable(s.field(p));
+        const key = s.id + ':' + p;
+        const active = available && state.customCells.has(key);
+        const cell = document.createElement('div');
+        cell.className = 'matrix-cell' + (active ? ' active' : '') + (available ? '' : ' disabled');
+        cell.style.setProperty('--c', customPathParamColor(p, rowIdx));
+        cell.title = available ? `${customSeriesLabel(s.id)} · P${p}` : t('tt_unavailable');
+        if (available) cell.onclick = () => customToggleCell(s.id, p);
+        td.appendChild(cell);
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+      rowIdx++;
+    } else {
+      const { fwd, rev } = row;
+      const hasAny = state.detectedPaths.some(p => customColAvailable(fwd.field(p)) || customColAvailable(rev.field(p)));
+      if (!hasAny) return; // hide entirely — neither direction present in this file
+
+      const tr = document.createElement('tr');
+      const th = document.createElement('th');
+      th.innerHTML = `${customPairedLabel(row.id)}<span class="y-axis-badge">${row.unit || '–'}</span>`;
+      th.title = t('tt_row');
+      th.onclick = () => customTogglePairRowAll(fwd, rev);
+      tr.appendChild(th);
+
+      state.detectedPaths.forEach(p => {
+        const td = document.createElement('td');
+        const fwdAvail = customColAvailable(fwd.field(p));
+        const revAvail = customColAvailable(rev.field(p));
+        const fwdKey = fwd.id + ':' + p, revKey = rev.id + ':' + p;
+        const fwdActive = fwdAvail && state.customCells.has(fwdKey);
+        const revActive = revAvail && state.customCells.has(revKey);
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'pair-cell' + ((fwdAvail || revAvail) ? '' : ' disabled');
+        wrapper.title = `${customPairedLabel(row.id)} · P${p} (${t('tt_pair_both')})`;
+        if (fwdAvail || revAvail) wrapper.onclick = () => customTogglePairCell(fwd, rev, p);
+
+        const fCell = document.createElement('div');
+        fCell.className = 'matrix-subcell' + (fwdActive ? ' active' : '') + (fwdAvail ? '' : ' disabled');
+        fCell.style.setProperty('--c', customPathParamColor(p, rowIdx));
+        fCell.title = fwdAvail ? `${customSeriesLabel(fwd.id)} · P${p}` : t('tt_unavailable');
+        fCell.textContent = 'F';
+        if (fwdAvail) fCell.onclick = e => { e.stopPropagation(); customToggleCell(fwd.id, p); };
+
+        const rCell = document.createElement('div');
+        rCell.className = 'matrix-subcell' + (revActive ? ' active' : '') + (revAvail ? '' : ' disabled');
+        rCell.style.setProperty('--c', customPathParamColor(p, rowIdx + 1));
+        rCell.title = revAvail ? `${customSeriesLabel(rev.id)} · P${p}` : t('tt_unavailable');
+        rCell.textContent = 'R';
+        if (revAvail) rCell.onclick = e => { e.stopPropagation(); customToggleCell(rev.id, p); };
+
+        wrapper.appendChild(fCell);
+        wrapper.appendChild(rCell);
+        td.appendChild(wrapper);
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+      rowIdx += 2;
+    }
+  });
+
+  table.appendChild(tbody);
+  wrap.appendChild(table);
+}
+
+// ---- Named presets (saved selections) ----
+function loadCustomPresets() {
+  try {
+    const raw = localStorage.getItem(CUSTOM_PRESETS_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) { /* ignore */ }
+  return {};
+}
+function saveCustomPresetsToStorage() {
+  try { localStorage.setItem(CUSTOM_PRESETS_KEY, JSON.stringify(state.customPresets)); }
+  catch (e) { /* ignore */ }
+}
+function customSeedDefaultPresetsIfEmpty() {
+  if (Object.keys(state.customPresets).length) return;
+  const paths = state.detectedPaths;
+  const cellsFor = (ids) => {
+    const arr = [];
+    ids.forEach(id => paths.forEach(p => arr.push(id + ':' + p)));
+    return arr;
+  };
+  const bi = (de, en) => currentLang === 'en' ? en : de;
+  state.customPresets = {
+    [bi('Geschwindigkeit (alle Pfade)', 'Velocity (all paths)')]: { cells: cellsFor(['vLayer']), globals: [] },
+    [bi('Signal-Diagnose', 'Signal Diagnostics')]: { cells: cellsFor(['snrfwd', 'snrrev', 'gainfwd', 'gainrev']), globals: [] },
+    [bi('Durchfluss', 'Flow')]: { cells: cellsFor(['Qp']), globals: ['Q'] },
+  };
+  saveCustomPresetsToStorage();
+}
+function customHandleSavePreset() {
+  const input = document.getElementById('presetNameInput');
+  const name = input.value.trim();
+  if (!name) return;
+  state.customPresets[name] = { cells: [...state.customCells], globals: [...state.customGlobal] };
+  saveCustomPresetsToStorage();
+  input.value = '';
+  customBuildPresetsUI();
+}
+function customLoadPreset(name) {
+  const preset = state.customPresets[name];
+  if (!preset) return;
+  state.customCells = new Set(preset.cells);
+  state.customGlobal = new Set(preset.globals);
+  saveCustomMatrixState();
+  buildCustomGlobalToggles();
+  buildCustomMatrix();
+  renderCustomChart();
+}
+function customDeletePreset(name) {
+  delete state.customPresets[name];
+  saveCustomPresetsToStorage();
+  customBuildPresetsUI();
+}
+function customBuildPresetsUI() {
+  const wrap = document.getElementById('presetsList');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  Object.keys(state.customPresets).forEach(name => {
+    const chip = document.createElement('div');
+    chip.className = 'preset-chip';
+    chip.onclick = () => customLoadPreset(name);
+
+    const label = document.createElement('span');
+    label.textContent = name;
+
+    const del = document.createElement('span');
+    del.className = 'preset-del';
+    del.textContent = '✕';
+    del.title = t('tt_preset_delete');
+    del.onclick = (e) => {
+      e.stopPropagation();
+      if (confirm(t('confirm_preset_delete').replace('{name}', name))) customDeletePreset(name);
+    };
+
+    chip.appendChild(label);
+    chip.appendChild(del);
+    wrap.appendChild(chip);
+  });
+}
+
+// ---- Chart rendering ----
+function renderCustomChart() {
+  if (!state.filtered.length) return;
+  const res = getRes('custom');
+
+  const activeGlobal = CUSTOM_GLOBAL_SERIES.filter(s => state.customGlobal.has(s.id) && customColAvailable(s.field()));
+  const activeCells = []; // { s, p }
+  CUSTOM_PATH_SERIES.forEach(s => {
+    state.detectedPaths.forEach(p => {
+      const key = s.id + ':' + p;
+      if (state.customCells.has(key) && customColAvailable(s.field(p))) activeCells.push({ s, p });
+    });
+  });
+
+  const fields = [...activeGlobal.map(s => s.field()), ...activeCells.map(c => c.s.field(c.p))];
+
+  const d = state.filtered;
+  let ds, labels;
+  if (res === 'daily' || res === 'hourly') {
+    const groupLen = res === 'daily' ? 10 : 13;
+    const g = avgBy(d, 'vm', r => r.TimeStamp?.substring(0, groupLen));
+    labels = g.map(x => res === 'hourly' ? x.label.substring(5) : x.label);
+    ds = g.map(x => {
+      const rows = d.filter(r => r.TimeStamp?.startsWith(x.label));
+      const avg = f => { const vs = rows.map(r => parseFloat(r[f])).filter(v => !isNaN(v)); return vs.length ? vs.reduce((a,b)=>a+b)/vs.length : null; };
+      const obj = {};
+      fields.forEach(f => { obj[f] = avg(f); });
+      return obj;
+    });
+  } else {
+    const result = rawOrDownsample(d);
+    ds = result.data; labels = makeTimeLabels(ds);
+  }
+
+  // Assign one Y-axis per distinct unit among the active series
+  const unitOrder = [];
+  activeGlobal.forEach(s => { if (!unitOrder.includes(s.unit)) unitOrder.push(s.unit); });
+  activeCells.forEach(c => { if (!unitOrder.includes(c.s.unit)) unitOrder.push(c.s.unit); });
+  const axisIdForUnit = {};
+  unitOrder.forEach((u, i) => { axisIdForUnit[u] = 'y_custom_' + i; });
+
+  const rowIdx = {};
+  CUSTOM_PATH_SERIES.forEach((s, i) => { rowIdx[s.id] = i; });
+
+  const datasets = [];
+  activeGlobal.forEach(s => {
+    const col = s.field();
+    datasets.push({
+      label: customSeriesLabel(s.id),
+      data: ds.map(r => { const v = parseFloat(r[col]); return isNaN(v) ? null : v; }),
+      borderColor: s.color,
+      borderWidth: 1.8, pointRadius: 0, tension: 0.2, fill: false,
+      yAxisID: axisIdForUnit[s.unit], spanGaps: false
+    });
+  });
+  activeCells.forEach(({ s, p }) => {
+    const col = s.field(p);
+    const dashIdx = rowIdx[s.id] % CUSTOM_DASH_PATTERNS.length;
+    datasets.push({
+      label: `P${p} · ${customSeriesLabel(s.id)}`,
+      data: ds.map(r => { const v = parseFloat(r[col]); return isNaN(v) ? null : (s.scale ? v * s.scale : v); }),
+      borderColor: customPathParamColor(p, rowIdx[s.id]),
+      borderDash: CUSTOM_DASH_PATTERNS[dashIdx],
+      borderWidth: 1.5, pointRadius: 0, tension: 0.2, fill: false,
+      yAxisID: axisIdForUnit[s.unit], spanGaps: false
+    });
+  });
+
+  const scales = {
+    x: { ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 10, font: { size: 10, family: "'IBM Plex Mono'" } }, grid: { color: '#F0F2F5' } }
+  };
+  unitOrder.forEach((u, i) => {
+    scales[axisIdForUnit[u]] = {
+      type: 'linear',
+      display: true,
+      position: i % 2 === 0 ? 'left' : 'right',
+      grid: { drawOnChartArea: i === 0 },
+      ticks: { font: { size: 9, family: "'IBM Plex Mono'" } },
+      title: { display: true, text: u || '–', font: { size: 9 } }
+    };
+  });
+
+  destroyChart('chartCustom');
+  const ctx = document.getElementById('chartCustom')?.getContext('2d');
+  if (!ctx) return;
+
+  if (!datasets.length) {
+    // Nothing selected — clear canvas, skip chart creation
+    return;
+  }
+
+  state.charts['chartCustom'] = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      plugins: {
+        legend: { display: true, labels: { font: { size: 10, family: "'IBM Plex Sans'" }, boxWidth: 10, padding: 8 } },
+        tooltip: { mode: 'index', intersect: false, bodyFont: { family: "'IBM Plex Mono'", size: 11 }, titleFont: { size: 11 } },
+        ...(ZOOM_AVAILABLE ? { zoom: {
+          zoom: { wheel: { enabled: true, speed: 0.1 }, pinch: { enabled: true }, drag: { enabled: true, backgroundColor: 'rgba(0,85,164,0.1)', borderColor: 'rgba(0,85,164,0.5)', borderWidth: 1 }, mode: 'x', onZoomComplete: () => updateZoomState('chartCustom', true) },
+          pan: { enabled: true, mode: 'x', onPanComplete: () => updateZoomState('chartCustom', true) },
+          limits: { x: { minRange: 2 } }
+        }} : {})
+      },
+      scales,
+      interaction: { mode: 'nearest', axis: 'x', intersect: false }
+    }
+  });
+
+  const resetBtn = document.getElementById('zoom-reset-chartCustom');
+  if (resetBtn) resetBtn.onclick = () => resetZoom('chartCustom');
+  ctx.canvas.ondblclick = () => resetZoom('chartCustom');
+  setTimeout(() => buildChartSlider('chartCustom'), 0);
+}
 // ===================== ANALYSIS =====================
 function switchAnalysisTab(tab, el) {
   document.querySelectorAll('.analysis-tab').forEach(t => t.style.display = 'none');
