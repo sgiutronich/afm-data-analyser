@@ -752,8 +752,9 @@
   table.param-matrix { border-collapse: collapse; font-size: 11px; width: 100%; }
   table.param-matrix th, table.param-matrix td { padding: 4px 6px; text-align: center; }
   table.param-matrix thead th {
-    font-weight: 700; cursor: pointer; user-select: none; padding-bottom: 8px;
+    font-weight: 700; cursor: pointer; user-select: none; padding: 6px 10px 10px;
     border-bottom: 1.5px solid var(--border); font-family: var(--mono); color: var(--text2);
+    background: var(--surface) !important; min-width: 46px;
   }
   table.param-matrix thead th:hover { text-decoration: underline; }
   table.param-matrix thead th.corner { cursor: default; }
@@ -761,10 +762,14 @@
   table.param-matrix tbody th {
     text-align: left; font-weight: 500; white-space: nowrap; cursor: pointer; user-select: none;
     display: flex; align-items: center; gap: 6px; padding: 5px 6px; color: var(--text2);
-    font-family: var(--sans);
+    font-family: var(--sans); border-bottom: 1px solid #f0f2f5;
   }
   table.param-matrix tbody th:hover { color: var(--gwf-blue); }
-  table.param-matrix tbody tr:nth-child(odd) { background: var(--surface2); }
+  table.param-matrix tbody td { border-bottom: 1px solid #f0f2f5; }
+  table.param-matrix tbody tr:nth-child(odd) th,
+  table.param-matrix tbody tr:nth-child(odd) td { background: var(--surface2) !important; }
+  table.param-matrix tbody tr:nth-child(even) th,
+  table.param-matrix tbody tr:nth-child(even) td { background: var(--surface) !important; }
   .row-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
   .matrix-cell {
     width: 18px; height: 18px; border-radius: 4px; margin: 0 auto;
@@ -1273,6 +1278,10 @@
             &nbsp;<span style="font-weight:400" data-i18n="lbl_matrix_hint">(Zeile / Spalte anklicken = alle umschalten)</span>
           </div>
           <div style="overflow-x:auto"><div id="customMatrix"></div></div>
+          <div id="customAxisControlsWrap" style="margin-top:14px">
+            <div style="font-size:11px;color:var(--text3);font-weight:500;margin-bottom:6px" data-i18n="lbl_axis_range">Y-Achsen-Bereich</div>
+            <div id="customAxisControls" style="display:flex;gap:16px;flex-wrap:wrap"></div>
+          </div>
           <div class="chart-wrap multi" style="margin-top:12px">
             <canvas id="chartCustom"></canvas>
           </div>
@@ -1529,6 +1538,7 @@ const TRANSLATIONS = {
     tt_path_color:'Pfad-Farbe ändern', tt_pair_both:'Klick = beide, F/R = einzeln',
     lbl_presets:'Gespeicherte Auswahl', ph_preset_name:'Name der Auswahl...', btn_save_preset:'+ Speichern',
     tt_preset_delete:'Auswahl löschen', confirm_preset_delete:'Auswahl "{name}" wirklich löschen?',
+    lbl_axis_range:'Y-Achsen-Bereich', ph_axis_min:'Min', ph_axis_max:'Max', btn_axis_auto:'Auto',
     btn_load_csv:'CSV laden', btn_load_diag:'Diagnose laden', btn_load_params:'Parameter laden',
     btn_export:'Export', btn_prev:'← Zurück', btn_next:'Weiter →',
     title_overview:'Übersicht', title_hauptdaten:'Hauptdaten', title_flow:'Durchfluss',
@@ -1685,6 +1695,7 @@ const TRANSLATIONS = {
     tt_path_color:'Change path colour', tt_pair_both:'Click = both, F/R = individually',
     lbl_presets:'Saved Selections', ph_preset_name:'Selection name...', btn_save_preset:'+ Save',
     tt_preset_delete:'Delete selection', confirm_preset_delete:'Really delete selection "{name}"?',
+    lbl_axis_range:'Y-Axis Range', ph_axis_min:'Min', ph_axis_max:'Max', btn_axis_auto:'Auto',
     btn_load_csv:'Load CSV', btn_load_diag:'Load Diagnostics', btn_load_params:'Load Parameters',
     btn_export:'Export', btn_prev:'← Back', btn_next:'Next →',
     title_overview:'Overview', title_hauptdaten:'Main Data', title_flow:'Flow',
@@ -4906,6 +4917,78 @@ function saveCustomPathColors() {
   catch (e) { /* ignore */ }
 }
 
+// ---- Y-axis range overrides (per unit) ----
+const CUSTOM_AXIS_KEY = 'afmCustomAxisRanges_v1';
+function loadCustomAxisRanges() {
+  try {
+    const raw = localStorage.getItem(CUSTOM_AXIS_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) { /* ignore */ }
+  return {};
+}
+function saveCustomAxisRanges() {
+  try { localStorage.setItem(CUSTOM_AXIS_KEY, JSON.stringify(state.customAxisRanges)); }
+  catch (e) { /* ignore */ }
+}
+function buildCustomAxisControls(unitOrder) {
+  const wrap = document.getElementById('customAxisControls');
+  const outer = document.getElementById('customAxisControlsWrap');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  if (outer) outer.style.display = unitOrder.length ? '' : 'none';
+  unitOrder.forEach(u => {
+    const range = state.customAxisRanges[u] || {};
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:11px';
+
+    const label = document.createElement('span');
+    label.textContent = u || '–';
+    label.style.cssText = 'font-weight:700;color:var(--text2);min-width:34px;font-family:var(--mono)';
+
+    const minInput = document.createElement('input');
+    minInput.type = 'number';
+    minInput.placeholder = t('ph_axis_min');
+    minInput.value = (range.min ?? '') === null ? '' : (range.min ?? '');
+    minInput.style.cssText = 'width:72px;font-size:11px;padding:4px 7px;border:1px solid var(--border);border-radius:5px';
+
+    const dash = document.createElement('span');
+    dash.textContent = '–';
+    dash.style.color = 'var(--text3)';
+
+    const maxInput = document.createElement('input');
+    maxInput.type = 'number';
+    maxInput.placeholder = t('ph_axis_max');
+    maxInput.value = (range.max ?? '') === null ? '' : (range.max ?? '');
+    maxInput.style.cssText = minInput.style.cssText;
+
+    const applyRange = () => {
+      const minV = minInput.value === '' ? null : parseFloat(minInput.value);
+      const maxV = maxInput.value === '' ? null : parseFloat(maxInput.value);
+      state.customAxisRanges[u] = { min: minV, max: maxV };
+      saveCustomAxisRanges();
+      renderCustomChart();
+    };
+    minInput.onchange = applyRange;
+    maxInput.onchange = applyRange;
+
+    const resetBtn = document.createElement('button');
+    resetBtn.textContent = t('btn_axis_auto');
+    resetBtn.style.cssText = 'font-size:10px;padding:4px 9px;border-radius:5px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);cursor:pointer;font-weight:600';
+    resetBtn.onclick = () => {
+      delete state.customAxisRanges[u];
+      saveCustomAxisRanges();
+      renderCustomChart();
+    };
+
+    row.appendChild(label);
+    row.appendChild(minInput);
+    row.appendChild(dash);
+    row.appendChild(maxInput);
+    row.appendChild(resetBtn);
+    wrap.appendChild(row);
+  });
+}
+
 function customColAvailable(field) {
   if (!state.filtered.length) return false;
   return state.filtered.some(r => r[field] !== null && r[field] !== undefined && r[field] !== '' && !isNaN(parseFloat(r[field])));
@@ -4918,6 +5001,7 @@ function renderCustom() {
     state.customGlobal = init.globals;
   }
   if (!state.customPathColors) state.customPathColors = loadCustomPathColors();
+  if (!state.customAxisRanges) state.customAxisRanges = loadCustomAxisRanges();
   if (!state.customPresets) {
     state.customPresets = loadCustomPresets();
     customSeedDefaultPresetsIfEmpty();
@@ -5063,7 +5147,7 @@ function buildCustomMatrix() {
     colorInput.type = 'color';
     colorInput.value = customBasePathColor(p);
     colorInput.title = t('tt_path_color');
-    colorInput.style.cssText = 'width:20px;height:16px;padding:0;border:1px solid var(--border);border-radius:3px;cursor:pointer;display:block;margin:0 auto 4px';
+    colorInput.style.cssText = 'width:34px;height:26px;padding:0;border:1.5px solid var(--border);border-radius:5px;cursor:pointer;display:block;margin:0 auto 6px';
     colorInput.onclick = e => e.stopPropagation();
     colorInput.oninput = e => {
       state.customPathColors[p] = e.target.value;
@@ -5075,6 +5159,8 @@ function buildCustomMatrix() {
     const label = document.createElement('div');
     label.textContent = 'P' + p;
     label.style.color = customBasePathColor(p);
+    label.style.fontSize = '13px';
+    label.style.fontWeight = '800';
 
     th.appendChild(colorInput);
     th.appendChild(label);
@@ -5319,15 +5405,19 @@ function renderCustomChart() {
     x: { ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 10, font: { size: 10, family: "'IBM Plex Mono'" } }, grid: { color: '#F0F2F5' } }
   };
   unitOrder.forEach((u, i) => {
+    const range = (state.customAxisRanges && state.customAxisRanges[u]) || {};
     scales[axisIdForUnit[u]] = {
       type: 'linear',
       display: true,
       position: i % 2 === 0 ? 'left' : 'right',
       grid: { drawOnChartArea: i === 0 },
       ticks: { font: { size: 9, family: "'IBM Plex Mono'" } },
-      title: { display: true, text: u || '–', font: { size: 9 } }
+      title: { display: true, text: u || '–', font: { size: 9 } },
+      ...(range.min !== undefined && range.min !== null && !isNaN(range.min) ? { min: range.min } : {}),
+      ...(range.max !== undefined && range.max !== null && !isNaN(range.max) ? { max: range.max } : {})
     };
   });
+  buildCustomAxisControls(unitOrder);
 
   destroyChart('chartCustom');
   const ctx = document.getElementById('chartCustom')?.getContext('2d');
