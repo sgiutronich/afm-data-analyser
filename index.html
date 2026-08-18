@@ -766,10 +766,6 @@
   }
   table.param-matrix tbody th:hover { color: var(--gwf-blue); }
   table.param-matrix tbody td { border-bottom: 1px solid #f0f2f5; }
-  table.param-matrix tbody tr:nth-child(odd) th,
-  table.param-matrix tbody tr:nth-child(odd) td { background: var(--surface2) !important; }
-  table.param-matrix tbody tr:nth-child(even) th,
-  table.param-matrix tbody tr:nth-child(even) td { background: var(--surface) !important; }
   .row-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
   .matrix-cell {
     width: 18px; height: 18px; border-radius: 4px; margin: 0 auto;
@@ -1288,7 +1284,6 @@
           <div id="slider-chartCustom" class="chart-slider-outer"></div>
           <div style="margin-top:8px;display:flex;gap:12px;flex-wrap:wrap;font-size:10px;color:var(--text3)">
             <span>🖱 Scrollen = Zoom · Klicken &amp; Ziehen = Bereich wählen · Doppelklick = Zurücksetzen</span>
-            <span data-i18n="hint_axis_drag">📏 Auf einer Y-Achse ziehen = diese Achse verschieben · Scrollen auf der Achse = diese Achse zoomen</span>
           </div>
         </div>
       </div>
@@ -1539,8 +1534,7 @@ const TRANSLATIONS = {
     tt_path_color:'Pfad-Farbe ändern', tt_pair_both:'Klick = beide, F/R = einzeln',
     lbl_presets:'Gespeicherte Auswahl', ph_preset_name:'Name der Auswahl...', btn_save_preset:'+ Speichern',
     tt_preset_delete:'Auswahl löschen', confirm_preset_delete:'Auswahl "{name}" wirklich löschen?',
-    lbl_axis_range:'Y-Achsen-Bereich', ph_axis_min:'Min', ph_axis_max:'Max', btn_axis_auto:'Auto',
-    hint_axis_drag:'📏 Auf einer Y-Achse ziehen = diese Achse verschieben · Scrollen auf der Achse = diese Achse zoomen',
+    lbl_axis_range:'Y-Achsen-Bereich', btn_axis_auto:'Auto',
     btn_load_csv:'CSV laden', btn_load_diag:'Diagnose laden', btn_load_params:'Parameter laden',
     btn_export:'Export', btn_prev:'← Zurück', btn_next:'Weiter →',
     title_overview:'Übersicht', title_hauptdaten:'Hauptdaten', title_flow:'Durchfluss',
@@ -1697,8 +1691,7 @@ const TRANSLATIONS = {
     tt_path_color:'Change path colour', tt_pair_both:'Click = both, F/R = individually',
     lbl_presets:'Saved Selections', ph_preset_name:'Selection name...', btn_save_preset:'+ Save',
     tt_preset_delete:'Delete selection', confirm_preset_delete:'Really delete selection "{name}"?',
-    lbl_axis_range:'Y-Axis Range', ph_axis_min:'Min', ph_axis_max:'Max', btn_axis_auto:'Auto',
-    hint_axis_drag:'📏 Drag on a Y-axis = pan that axis · Scroll on the axis = zoom that axis',
+    lbl_axis_range:'Y-Axis Range', btn_axis_auto:'Auto',
     btn_load_csv:'Load CSV', btn_load_diag:'Load Diagnostics', btn_load_params:'Load Parameters',
     btn_export:'Export', btn_prev:'← Back', btn_next:'Next →',
     title_overview:'Overview', title_hauptdaten:'Main Data', title_flow:'Flow',
@@ -4920,8 +4913,10 @@ function saveCustomPathColors() {
   catch (e) { /* ignore */ }
 }
 
-// ---- Y-axis range overrides (per unit) ----
-const CUSTOM_AXIS_KEY = 'afmCustomAxisRanges_v1';
+// ---- Y-axis scale sliders (per unit) — same simple pattern as the Hauptdaten tab:
+// a single 5-100% slider that scales the axis max relative to the data's own max,
+// with min pinned at 0. Far easier to use than typing exact numbers or dragging the axis.
+const CUSTOM_AXIS_KEY = 'afmCustomAxisRanges_v2';
 function loadCustomAxisRanges() {
   try {
     const raw = localStorage.getItem(CUSTOM_AXIS_KEY);
@@ -4933,78 +4928,63 @@ function saveCustomAxisRanges() {
   try { localStorage.setItem(CUSTOM_AXIS_KEY, JSON.stringify(state.customAxisRanges)); }
   catch (e) { /* ignore */ }
 }
-// Called after the user drags/scrolls directly on a Y-axis (chartjs-plugin-zoom's
-// "over scale mode" — drag on the axis itself to pan/rescale just that axis).
-// Reads the live scale range back into our own state so it persists across
-// re-renders and stays in sync with the manual Min/Max boxes.
-function customSyncAxisRangesFromChart(chartId) {
-  const chart = state.charts[chartId];
-  const map = state.customAxisIdForUnit;
-  if (!chart || !map) return;
-  Object.entries(map).forEach(([unit, axisId]) => {
-    const scale = chart.scales[axisId];
-    if (!scale) return;
-    state.customAxisRanges[unit] = { min: scale.min, max: scale.max };
-  });
+// Live-update the already-rendered chart as the slider is dragged (smooth, no rebuild),
+// and persist the chosen percentage so it's honoured next time the chart is rebuilt.
+function customScaleAxis(unit, axisId, pctStr, valLabelId) {
+  const chart = state.charts['chartCustom'];
+  if (!chart) return;
+  const pct = parseInt(pctStr, 10);
+  state.customAxisRanges[unit] = { pct };
   saveCustomAxisRanges();
-  buildCustomAxisControls(Object.keys(map)); // refresh the Min/Max inputs to match, without touching the chart
+  const dsForAxis = chart.data.datasets.filter(d => d.yAxisID === axisId);
+  const allVals = dsForAxis.flatMap(d => d.data).filter(v => v !== null && v !== undefined && !isNaN(v));
+  const dataMax = allVals.length ? Math.max(...allVals) : 1;
+  const newMax = pct >= 100 ? undefined : dataMax * (0.2 + (pct / 100) * 1.3);
+  chart.options.scales[axisId].max = newMax;
+  chart.options.scales[axisId].min = pct >= 100 ? undefined : 0;
+  chart.update('none');
+  const label = document.getElementById(valLabelId);
+  if (label) label.textContent = newMax !== undefined ? newMax.toFixed(3) : t('btn_axis_auto');
 }
-
-function buildCustomAxisControls(unitOrder) {
+// Rebuilds the slider row. Called after the chart itself is (re)created so the
+// initial "Auto"/number label can read the actual computed scale straight away.
+function buildCustomAxisControls(unitOrder, axisIdForUnit, scalesConfig) {
   const wrap = document.getElementById('customAxisControls');
   const outer = document.getElementById('customAxisControlsWrap');
   if (!wrap) return;
   wrap.innerHTML = '';
   if (outer) outer.style.display = unitOrder.length ? '' : 'none';
   unitOrder.forEach(u => {
-    const range = state.customAxisRanges[u] || {};
+    const axisId = axisIdForUnit[u];
+    const stored = state.customAxisRanges[u] || {};
+    const pct = stored.pct ?? 100;
+    const sliderId = 'custom-yslider-' + axisId;
+    const valId = sliderId + '-val';
+
     const row = document.createElement('div');
-    row.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:11px';
+    row.className = 'yaxis-slider-wrap';
 
     const label = document.createElement('span');
-    label.textContent = u || '–';
-    label.style.cssText = 'font-weight:700;color:var(--text2);min-width:34px;font-family:var(--mono)';
+    label.textContent = '↕ ' + (u || '–') + ':';
+    label.style.fontWeight = '500';
+    label.style.color = 'var(--text2)';
 
-    const minInput = document.createElement('input');
-    minInput.type = 'number';
-    minInput.placeholder = t('ph_axis_min');
-    minInput.value = (range.min ?? '') === null ? '' : (range.min ?? '');
-    minInput.style.cssText = 'width:72px;font-size:11px;padding:4px 7px;border:1px solid var(--border);border-radius:5px';
+    const slider = document.createElement('input');
+    slider.type = 'range';
+    slider.min = '5'; slider.max = '100'; slider.step = '1';
+    slider.value = String(pct);
+    slider.id = sliderId;
+    slider.oninput = () => customScaleAxis(u, axisId, slider.value, valId);
 
-    const dash = document.createElement('span');
-    dash.textContent = '–';
-    dash.style.color = 'var(--text3)';
-
-    const maxInput = document.createElement('input');
-    maxInput.type = 'number';
-    maxInput.placeholder = t('ph_axis_max');
-    maxInput.value = (range.max ?? '') === null ? '' : (range.max ?? '');
-    maxInput.style.cssText = minInput.style.cssText;
-
-    const applyRange = () => {
-      const minV = minInput.value === '' ? null : parseFloat(minInput.value);
-      const maxV = maxInput.value === '' ? null : parseFloat(maxInput.value);
-      state.customAxisRanges[u] = { min: minV, max: maxV };
-      saveCustomAxisRanges();
-      renderCustomChart();
-    };
-    minInput.onchange = applyRange;
-    maxInput.onchange = applyRange;
-
-    const resetBtn = document.createElement('button');
-    resetBtn.textContent = t('btn_axis_auto');
-    resetBtn.style.cssText = 'font-size:10px;padding:4px 9px;border-radius:5px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);cursor:pointer;font-weight:600';
-    resetBtn.onclick = () => {
-      delete state.customAxisRanges[u];
-      saveCustomAxisRanges();
-      renderCustomChart();
-    };
+    const valSpan = document.createElement('span');
+    valSpan.className = 'yaxis-val';
+    valSpan.id = valId;
+    const currentMax = scalesConfig && scalesConfig[axisId] ? scalesConfig[axisId].max : undefined;
+    valSpan.textContent = currentMax !== undefined ? currentMax.toFixed(3) : t('btn_axis_auto');
 
     row.appendChild(label);
-    row.appendChild(minInput);
-    row.appendChild(dash);
-    row.appendChild(maxInput);
-    row.appendChild(resetBtn);
+    row.appendChild(slider);
+    row.appendChild(valSpan);
     wrap.appendChild(row);
   });
 }
@@ -5192,6 +5172,7 @@ function buildCustomMatrix() {
   // Body rows: one row per PARAMETER (or Fwd/Rev pair), hidden entirely if no data anywhere
   const tbody = document.createElement('tbody');
   let rowIdx = 0; // colour-shift index, consumed per rendered row (paired rows use 2 slots)
+  let visualRow = 0; // counts only rows actually rendered, for reliable alternating shading
 
   CUSTOM_MATRIX_ROWS.forEach(row => {
     if (row.type === 'single') {
@@ -5199,15 +5180,18 @@ function buildCustomMatrix() {
       const hasAny = state.detectedPaths.some(p => customColAvailable(s.field(p)));
       if (!hasAny) return; // hide entirely — not present in this file
 
+      const rowBg = (visualRow % 2 === 0) ? 'var(--surface)' : 'var(--surface2)';
       const tr = document.createElement('tr');
       const th = document.createElement('th');
       th.innerHTML = `${customSeriesLabel(s.id)}<span class="y-axis-badge">${s.unit || '–'}</span>`;
       th.title = t('tt_row');
       th.onclick = () => customToggleRowAll(s);
+      th.style.background = rowBg; // inline — wins over any external CSS regardless of specificity
       tr.appendChild(th);
 
       state.detectedPaths.forEach(p => {
         const td = document.createElement('td');
+        td.style.background = rowBg;
         const available = customColAvailable(s.field(p));
         const key = s.id + ':' + p;
         const active = available && state.customCells.has(key);
@@ -5221,20 +5205,24 @@ function buildCustomMatrix() {
       });
       tbody.appendChild(tr);
       rowIdx++;
+      visualRow++;
     } else {
       const { fwd, rev } = row;
       const hasAny = state.detectedPaths.some(p => customColAvailable(fwd.field(p)) || customColAvailable(rev.field(p)));
       if (!hasAny) return; // hide entirely — neither direction present in this file
 
+      const rowBg = (visualRow % 2 === 0) ? 'var(--surface)' : 'var(--surface2)';
       const tr = document.createElement('tr');
       const th = document.createElement('th');
       th.innerHTML = `${customPairedLabel(row.id)}<span class="y-axis-badge">${row.unit || '–'}</span>`;
       th.title = t('tt_row');
       th.onclick = () => customTogglePairRowAll(fwd, rev);
+      th.style.background = rowBg;
       tr.appendChild(th);
 
       state.detectedPaths.forEach(p => {
         const td = document.createElement('td');
+        td.style.background = rowBg;
         const fwdAvail = customColAvailable(fwd.field(p));
         const revAvail = customColAvailable(rev.field(p));
         const fwdKey = fwd.id + ':' + p, revKey = rev.id + ':' + p;
@@ -5267,6 +5255,7 @@ function buildCustomMatrix() {
       });
       tbody.appendChild(tr);
       rowIdx += 2;
+      visualRow++;
     }
   });
 
@@ -5393,7 +5382,6 @@ function renderCustomChart() {
   activeCells.forEach(c => { if (!unitOrder.includes(c.s.unit)) unitOrder.push(c.s.unit); });
   const axisIdForUnit = {};
   unitOrder.forEach((u, i) => { axisIdForUnit[u] = 'y_custom_' + i; });
-  state.customAxisIdForUnit = axisIdForUnit; // for reverse lookup after drag-to-rescale on an axis
 
   const rowIdx = {};
   CUSTOM_PATH_SERIES.forEach((s, i) => { rowIdx[s.id] = i; });
@@ -5426,19 +5414,23 @@ function renderCustomChart() {
     x: { ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 10, font: { size: 10, family: "'IBM Plex Mono'" } }, grid: { color: '#F0F2F5' } }
   };
   unitOrder.forEach((u, i) => {
-    const range = (state.customAxisRanges && state.customAxisRanges[u]) || {};
-    scales[axisIdForUnit[u]] = {
+    const axisId = axisIdForUnit[u];
+    const pct = (state.customAxisRanges[u] && state.customAxisRanges[u].pct) ?? 100;
+    scales[axisId] = {
       type: 'linear',
       display: true,
       position: i % 2 === 0 ? 'left' : 'right',
       grid: { drawOnChartArea: i === 0 },
       ticks: { font: { size: 9, family: "'IBM Plex Mono'" } },
-      title: { display: true, text: u || '–', font: { size: 9 } },
-      ...(range.min !== undefined && range.min !== null && !isNaN(range.min) ? { min: range.min } : {}),
-      ...(range.max !== undefined && range.max !== null && !isNaN(range.max) ? { max: range.max } : {})
+      title: { display: true, text: u || '–', font: { size: 9 } }
     };
+    if (pct < 100) {
+      const axisVals = datasets.filter(d => d.yAxisID === axisId).flatMap(d => d.data).filter(v => v !== null && v !== undefined && !isNaN(v));
+      const dataMax = axisVals.length ? Math.max(...axisVals) : 1;
+      scales[axisId].max = dataMax * (0.2 + (pct / 100) * 1.3);
+      scales[axisId].min = 0;
+    }
   });
-  buildCustomAxisControls(unitOrder);
 
   destroyChart('chartCustom');
   const ctx = document.getElementById('chartCustom')?.getContext('2d');
@@ -5446,6 +5438,7 @@ function renderCustomChart() {
 
   if (!datasets.length) {
     // Nothing selected — clear canvas, skip chart creation
+    buildCustomAxisControls([], {}, {});
     return;
   }
 
@@ -5460,8 +5453,8 @@ function renderCustomChart() {
         legend: { display: true, labels: { font: { size: 10, family: "'IBM Plex Sans'" }, boxWidth: 10, padding: 8 } },
         tooltip: { mode: 'index', intersect: false, bodyFont: { family: "'IBM Plex Mono'", size: 11 }, titleFont: { size: 11 } },
         ...(ZOOM_AVAILABLE ? { zoom: {
-          zoom: { wheel: { enabled: true, speed: 0.1 }, pinch: { enabled: true }, drag: { enabled: true, backgroundColor: 'rgba(0,85,164,0.1)', borderColor: 'rgba(0,85,164,0.5)', borderWidth: 1 }, mode: 'x', scaleMode: 'y', onZoomComplete: () => { updateZoomState('chartCustom', true); customSyncAxisRangesFromChart('chartCustom'); } },
-          pan: { enabled: true, mode: 'x', scaleMode: 'y', onPanComplete: () => { updateZoomState('chartCustom', true); customSyncAxisRangesFromChart('chartCustom'); } },
+          zoom: { wheel: { enabled: true, speed: 0.1 }, pinch: { enabled: true }, drag: { enabled: true, backgroundColor: 'rgba(0,85,164,0.1)', borderColor: 'rgba(0,85,164,0.5)', borderWidth: 1 }, mode: 'x', onZoomComplete: () => updateZoomState('chartCustom', true) },
+          pan: { enabled: true, mode: 'x', onPanComplete: () => updateZoomState('chartCustom', true) },
           limits: { x: { minRange: 2 } }
         }} : {})
       },
@@ -5473,6 +5466,7 @@ function renderCustomChart() {
   const resetBtn = document.getElementById('zoom-reset-chartCustom');
   if (resetBtn) resetBtn.onclick = () => resetZoom('chartCustom');
   ctx.canvas.ondblclick = () => resetZoom('chartCustom');
+  buildCustomAxisControls(unitOrder, axisIdForUnit, scales);
   setTimeout(() => buildChartSlider('chartCustom'), 0);
 }
 // ===================== ANALYSIS =====================
