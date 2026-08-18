@@ -4928,6 +4928,20 @@ function saveCustomAxisRanges() {
   try { localStorage.setItem(CUSTOM_AXIS_KEY, JSON.stringify(state.customAxisRanges)); }
   catch (e) { /* ignore */ }
 }
+// Shared range math: at pct=100 → auto (Chart.js default padding). As pct drops,
+// tighten the visible range around the data's OWN min/max — not an arbitrary zero
+// baseline, since many units here (dB, %, °C) sit far above zero and pinning min=0
+// just squeezes the real data into a thin sliver instead of zooming into it.
+function customComputeAxisRange(vals, pct) {
+  if (pct >= 100 || !vals.length) return null; // null = auto
+  const dataMin = Math.min(...vals);
+  const dataMax = Math.max(...vals);
+  const span = (dataMax - dataMin) || Math.abs(dataMax) || 1;
+  // pct=100 → generous padding (~50% of span); pct=5 → very tight (~2% of span)
+  const paddingFactor = 0.02 + (pct / 100) * 0.48;
+  const padding = span * paddingFactor;
+  return { min: dataMin - padding, max: dataMax + padding };
+}
 // Live-update the already-rendered chart as the slider is dragged (smooth, no rebuild),
 // and persist the chosen percentage so it's honoured next time the chart is rebuilt.
 function customScaleAxis(unit, axisId, pctStr, valLabelId) {
@@ -4938,13 +4952,12 @@ function customScaleAxis(unit, axisId, pctStr, valLabelId) {
   saveCustomAxisRanges();
   const dsForAxis = chart.data.datasets.filter(d => d.yAxisID === axisId);
   const allVals = dsForAxis.flatMap(d => d.data).filter(v => v !== null && v !== undefined && !isNaN(v));
-  const dataMax = allVals.length ? Math.max(...allVals) : 1;
-  const newMax = pct >= 100 ? undefined : dataMax * (0.2 + (pct / 100) * 1.3);
-  chart.options.scales[axisId].max = newMax;
-  chart.options.scales[axisId].min = pct >= 100 ? undefined : 0;
+  const range = customComputeAxisRange(allVals, pct);
+  chart.options.scales[axisId].min = range ? range.min : undefined;
+  chart.options.scales[axisId].max = range ? range.max : undefined;
   chart.update('none');
   const label = document.getElementById(valLabelId);
-  if (label) label.textContent = newMax !== undefined ? newMax.toFixed(3) : t('btn_axis_auto');
+  if (label) label.textContent = range ? `${range.min.toFixed(2)} – ${range.max.toFixed(2)}` : t('btn_axis_auto');
 }
 // Rebuilds the slider row. Called after the chart itself is (re)created so the
 // initial "Auto"/number label can read the actual computed scale straight away.
@@ -4979,8 +4992,9 @@ function buildCustomAxisControls(unitOrder, axisIdForUnit, scalesConfig) {
     const valSpan = document.createElement('span');
     valSpan.className = 'yaxis-val';
     valSpan.id = valId;
-    const currentMax = scalesConfig && scalesConfig[axisId] ? scalesConfig[axisId].max : undefined;
-    valSpan.textContent = currentMax !== undefined ? currentMax.toFixed(3) : t('btn_axis_auto');
+    const sMin = scalesConfig && scalesConfig[axisId] ? scalesConfig[axisId].min : undefined;
+    const sMax = scalesConfig && scalesConfig[axisId] ? scalesConfig[axisId].max : undefined;
+    valSpan.textContent = (sMax !== undefined && sMin !== undefined) ? `${sMin.toFixed(2)} – ${sMax.toFixed(2)}` : t('btn_axis_auto');
 
     row.appendChild(label);
     row.appendChild(slider);
@@ -5426,9 +5440,8 @@ function renderCustomChart() {
     };
     if (pct < 100) {
       const axisVals = datasets.filter(d => d.yAxisID === axisId).flatMap(d => d.data).filter(v => v !== null && v !== undefined && !isNaN(v));
-      const dataMax = axisVals.length ? Math.max(...axisVals) : 1;
-      scales[axisId].max = dataMax * (0.2 + (pct / 100) * 1.3);
-      scales[axisId].min = 0;
+      const range = customComputeAxisRange(axisVals, pct);
+      if (range) { scales[axisId].min = range.min; scales[axisId].max = range.max; }
     }
   });
 

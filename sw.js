@@ -2,7 +2,7 @@
  * AFM Data Analyser — Service Worker v1.1.0
  * Fully offline-capable: all assets pre-cached on install
  */
-const CACHE = 'afm-v1.6.0';
+const CACHE = 'afm-v1.6.1';
 const ASSETS = [
   './index.html',
   './manifest.json',
