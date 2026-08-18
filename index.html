@@ -1288,6 +1288,7 @@
           <div id="slider-chartCustom" class="chart-slider-outer"></div>
           <div style="margin-top:8px;display:flex;gap:12px;flex-wrap:wrap;font-size:10px;color:var(--text3)">
             <span>🖱 Scrollen = Zoom · Klicken &amp; Ziehen = Bereich wählen · Doppelklick = Zurücksetzen</span>
+            <span data-i18n="hint_axis_drag">📏 Auf einer Y-Achse ziehen = diese Achse verschieben · Scrollen auf der Achse = diese Achse zoomen</span>
           </div>
         </div>
       </div>
@@ -1539,6 +1540,7 @@ const TRANSLATIONS = {
     lbl_presets:'Gespeicherte Auswahl', ph_preset_name:'Name der Auswahl...', btn_save_preset:'+ Speichern',
     tt_preset_delete:'Auswahl löschen', confirm_preset_delete:'Auswahl "{name}" wirklich löschen?',
     lbl_axis_range:'Y-Achsen-Bereich', ph_axis_min:'Min', ph_axis_max:'Max', btn_axis_auto:'Auto',
+    hint_axis_drag:'📏 Auf einer Y-Achse ziehen = diese Achse verschieben · Scrollen auf der Achse = diese Achse zoomen',
     btn_load_csv:'CSV laden', btn_load_diag:'Diagnose laden', btn_load_params:'Parameter laden',
     btn_export:'Export', btn_prev:'← Zurück', btn_next:'Weiter →',
     title_overview:'Übersicht', title_hauptdaten:'Hauptdaten', title_flow:'Durchfluss',
@@ -1696,6 +1698,7 @@ const TRANSLATIONS = {
     lbl_presets:'Saved Selections', ph_preset_name:'Selection name...', btn_save_preset:'+ Save',
     tt_preset_delete:'Delete selection', confirm_preset_delete:'Really delete selection "{name}"?',
     lbl_axis_range:'Y-Axis Range', ph_axis_min:'Min', ph_axis_max:'Max', btn_axis_auto:'Auto',
+    hint_axis_drag:'📏 Drag on a Y-axis = pan that axis · Scroll on the axis = zoom that axis',
     btn_load_csv:'Load CSV', btn_load_diag:'Load Diagnostics', btn_load_params:'Load Parameters',
     btn_export:'Export', btn_prev:'← Back', btn_next:'Next →',
     title_overview:'Overview', title_hauptdaten:'Main Data', title_flow:'Flow',
@@ -4930,6 +4933,23 @@ function saveCustomAxisRanges() {
   try { localStorage.setItem(CUSTOM_AXIS_KEY, JSON.stringify(state.customAxisRanges)); }
   catch (e) { /* ignore */ }
 }
+// Called after the user drags/scrolls directly on a Y-axis (chartjs-plugin-zoom's
+// "over scale mode" — drag on the axis itself to pan/rescale just that axis).
+// Reads the live scale range back into our own state so it persists across
+// re-renders and stays in sync with the manual Min/Max boxes.
+function customSyncAxisRangesFromChart(chartId) {
+  const chart = state.charts[chartId];
+  const map = state.customAxisIdForUnit;
+  if (!chart || !map) return;
+  Object.entries(map).forEach(([unit, axisId]) => {
+    const scale = chart.scales[axisId];
+    if (!scale) return;
+    state.customAxisRanges[unit] = { min: scale.min, max: scale.max };
+  });
+  saveCustomAxisRanges();
+  buildCustomAxisControls(Object.keys(map)); // refresh the Min/Max inputs to match, without touching the chart
+}
+
 function buildCustomAxisControls(unitOrder) {
   const wrap = document.getElementById('customAxisControls');
   const outer = document.getElementById('customAxisControlsWrap');
@@ -5373,6 +5393,7 @@ function renderCustomChart() {
   activeCells.forEach(c => { if (!unitOrder.includes(c.s.unit)) unitOrder.push(c.s.unit); });
   const axisIdForUnit = {};
   unitOrder.forEach((u, i) => { axisIdForUnit[u] = 'y_custom_' + i; });
+  state.customAxisIdForUnit = axisIdForUnit; // for reverse lookup after drag-to-rescale on an axis
 
   const rowIdx = {};
   CUSTOM_PATH_SERIES.forEach((s, i) => { rowIdx[s.id] = i; });
@@ -5439,8 +5460,8 @@ function renderCustomChart() {
         legend: { display: true, labels: { font: { size: 10, family: "'IBM Plex Sans'" }, boxWidth: 10, padding: 8 } },
         tooltip: { mode: 'index', intersect: false, bodyFont: { family: "'IBM Plex Mono'", size: 11 }, titleFont: { size: 11 } },
         ...(ZOOM_AVAILABLE ? { zoom: {
-          zoom: { wheel: { enabled: true, speed: 0.1 }, pinch: { enabled: true }, drag: { enabled: true, backgroundColor: 'rgba(0,85,164,0.1)', borderColor: 'rgba(0,85,164,0.5)', borderWidth: 1 }, mode: 'x', onZoomComplete: () => updateZoomState('chartCustom', true) },
-          pan: { enabled: true, mode: 'x', onPanComplete: () => updateZoomState('chartCustom', true) },
+          zoom: { wheel: { enabled: true, speed: 0.1 }, pinch: { enabled: true }, drag: { enabled: true, backgroundColor: 'rgba(0,85,164,0.1)', borderColor: 'rgba(0,85,164,0.5)', borderWidth: 1 }, mode: 'x', scaleMode: 'y', onZoomComplete: () => { updateZoomState('chartCustom', true); customSyncAxisRangesFromChart('chartCustom'); } },
+          pan: { enabled: true, mode: 'x', scaleMode: 'y', onPanComplete: () => { updateZoomState('chartCustom', true); customSyncAxisRangesFromChart('chartCustom'); } },
           limits: { x: { minRange: 2 } }
         }} : {})
       },
