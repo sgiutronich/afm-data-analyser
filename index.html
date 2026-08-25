@@ -3593,7 +3593,7 @@ function rowTimeMs(r) {
 // Groups by real numeric time buckets (not string-prefix truncation, which only
 // works for hour/day boundaries). Automatically thins very dense results so
 // charts stay responsive regardless of how fine the chosen interval is.
-function avgByInterval(data, field, ms, maxPoints = 15000) {
+function avgByInterval(data, field, ms, maxPoints = 100000) {
   const buckets = new Map();
   data.forEach(r => {
     const t = rowTimeMs(r);
@@ -3615,7 +3615,7 @@ function avgByInterval(data, field, ms, maxPoints = 15000) {
 // Multi-field version: one pass groups every requested field by the same time
 // buckets, so multiple series (e.g. Q/H/vm, or Custom's whole field list) share
 // exactly the same x-axis buckets without re-scanning the dataset per field.
-function avgByIntervalMulti(data, fields, ms, maxPoints = 15000) {
+function avgByIntervalMulti(data, fields, ms, maxPoints = 100000) {
   const buckets = new Map();
   data.forEach(r => {
     const t = rowTimeMs(r);
