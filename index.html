@@ -967,6 +967,7 @@
               <option value="24h" data-i18n-opt="res_24h">24 Std.</option>
             </select>
             <span class="native-interval-badge" style="font-size:10px;color:var(--text3);margin-left:6px"></span>
+          <span id="res-readout-overview" class="resolution-readout" style="font-size:10px;color:var(--text3);margin-left:6px"></span>
           </div>
           <div class="metrics-row" id="metricsRow"></div>
           <div class="grid-2">
@@ -1014,6 +1015,7 @@
             <option value="24h" data-i18n-opt="res_24h">24 Std.</option>
           </select>
           <span class="native-interval-badge" style="font-size:10px;color:var(--text3)"></span>
+          <span id="res-readout-hauptdaten" class="resolution-readout" style="font-size:10px;color:var(--text3)"></span>
           <span style="font-size:11px;color:var(--text3)">
             <span style="display:inline-block;width:24px;height:3px;background:#1E88E5;vertical-align:middle;margin-right:4px;border-radius:2px"></span><span data-i18n="hd_q">Q (m³/s)</span>
             <span style="display:inline-block;width:24px;height:3px;background:#00897B;vertical-align:middle;margin:0 4px 0 12px;border-radius:2px"></span><span data-i18n="hd_h">H (m)</span>
@@ -1064,6 +1066,7 @@
             <option value="24h" data-i18n-opt="res_24h">24 Std.</option>
           </select>
           <span class="native-interval-badge" style="font-size:10px;color:var(--text3);margin-left:6px"></span>
+          <span id="res-readout-flow" class="resolution-readout" style="font-size:10px;color:var(--text3);margin-left:6px"></span>
         </div>
         <div class="metrics-row" id="flowMetrics"></div>
         <div class="chart-card">
@@ -1111,6 +1114,7 @@
             <option value="24h" data-i18n-opt="res_24h">24 Std.</option>
           </select>
           <span class="native-interval-badge" style="font-size:10px;color:var(--text3);margin-left:6px"></span>
+          <span id="res-readout-level" class="resolution-readout" style="font-size:10px;color:var(--text3);margin-left:6px"></span>
         </div>
         <div class="chart-card">
           <div class="chart-header">
@@ -1160,6 +1164,7 @@
             <option value="24h" data-i18n-opt="res_24h">24 Std.</option>
           </select>
           <span class="native-interval-badge" style="font-size:10px;color:var(--text3);margin-left:6px"></span>
+          <span id="res-readout-velocity" class="resolution-readout" style="font-size:10px;color:var(--text3);margin-left:6px"></span>
         </div>
         <div class="chart-card">
           <div class="chart-header">
@@ -1205,6 +1210,7 @@
             <option value="24h" data-i18n-opt="res_24h">24 Std.</option>
           </select>
           <span class="native-interval-badge" style="font-size:10px;color:var(--text3);margin-left:6px"></span>
+          <span id="res-readout-signal" class="resolution-readout" style="font-size:10px;color:var(--text3);margin-left:6px"></span>
         </div>
         <div class="chart-card">
           <div class="chart-header">
@@ -1283,6 +1289,7 @@
             <option value="24h" data-i18n-opt="res_24h">24 Std.</option>
           </select>
           <span class="native-interval-badge" style="font-size:10px;color:var(--text3);margin-left:6px"></span>
+          <span id="res-readout-custom" class="resolution-readout" style="font-size:10px;color:var(--text3);margin-left:6px"></span>
         </div>
         <div class="chart-card">
           <div class="chart-header">
@@ -1578,7 +1585,7 @@ const TRANSLATIONS = {
     title_params:'Geräteparameter', title_rawdata:'Rohdaten',
     res_all:'5 min', res_hourly:'Stündlich', res_daily:'Täglich',
     res_30s:'30 Sek.', res_1m:'1 Min.', res_2m:'2 Min.', res_5m:'5 Min.', res_15m:'15 Min.', res_60m:'60 Min.', res_24h:'24 Std.',
-    lbl_file_interval:'Datenintervall der Datei',
+    lbl_file_interval:'Datenintervall der Datei', lbl_showing:'Anzeige',
     tab_summary:'Zusammenfassung', tab_params_rec:'Parameterempfehlungen',
     tab_service:'Serviceempfehlungen', tab_environment:'Umgebungseinflüsse', tab_errors:'Fehlercodes',
     drop_title:'CSV-Datei laden', drop_sub:'Datei hierher ziehen oder klicken zum Auswählen',
@@ -1737,7 +1744,7 @@ const TRANSLATIONS = {
     title_params:'Device Parameters', title_rawdata:'Raw Data',
     res_all:'5 min', res_hourly:'Hourly', res_daily:'Daily',
     res_30s:'30 sec', res_1m:'1 min', res_2m:'2 min', res_5m:'5 min', res_15m:'15 min', res_60m:'60 min', res_24h:'24 hr',
-    lbl_file_interval:'File data interval',
+    lbl_file_interval:'File data interval', lbl_showing:'Showing',
     tab_summary:'Summary', tab_params_rec:'Parameter Recommendations',
     tab_service:'Service Recommendations', tab_environment:'Environmental Influences', tab_errors:'Error Codes',
     drop_title:'Load CSV File', drop_sub:'Drag file here or click to select',
@@ -3658,6 +3665,13 @@ function updateNativeIntervalBadges() {
   const text = state.nativeIntervalMs ? `(${t('lbl_file_interval')}: ${formatIntervalMs(state.nativeIntervalMs)})` : '';
   document.querySelectorAll('.native-interval-badge').forEach(el => { el.textContent = text; });
 }
+// Ground-truth readout so nobody has to guess the real resolution from tick spacing
+// (Chart.js's maxTicksLimit thins visible labels to ~10 regardless of true bucket count).
+function updateResolutionReadout(viewId, ms, count) {
+  const el = document.getElementById('res-readout-' + viewId);
+  if (!el) return;
+  el.textContent = `· ${t('lbl_showing')}: ${count.toLocaleString('de')} × ${formatIntervalMs(ms)}`;
+}
 // On (re)load of a file, default every resolution dropdown to the coarsest
 // interval that is still >= the file's own native logging interval — avoids
 // defaulting to e.g. "30 sec" on a file that only has 5-min readings.
@@ -3925,6 +3939,7 @@ function renderHauptdaten() {
   const qData = grouped.map(g => g.Q);
   const hData = grouped.map(g => g.H);
   const vmData = grouped.map(g => g.vm);
+  updateResolutionReadout('hauptdaten', ms, grouped.length);
 
   destroyChart('chartHaupt');
   const canvas = document.getElementById('chartHaupt');
@@ -4113,6 +4128,7 @@ function renderOverviewCharts() {
     label: bi('vm (m/s)','vm (m/s)'), data: vmGrouped.map(g => g.value.toFixed(4)),
     borderColor: '#E8A000', backgroundColor: 'rgba(232,160,0,0.07)', fill: true, ...pointStyle
   }], { legend: false, yTitle: 'm/s' });
+  updateResolutionReadout('overview', ms, qGrouped.length);
 }
 
 // ===================== FLOW =====================
@@ -4127,6 +4143,7 @@ function renderFlow() {
   const grouped = avgByIntervalMulti(d, [...baseFields, ...pathFields], ms);
   const labels = grouped.map(g => g.TimeStamp);
   const ds = grouped;
+  updateResolutionReadout('flow', ms, grouped.length);
 
   // Initial metrics from full filtered dataset
   updateFlowMetrics(d);
@@ -4316,6 +4333,7 @@ function renderLevel() {
     borderColor: '#00897B', backgroundColor: 'rgba(0,137,123,0.1)',
     borderWidth: 1.5, pointRadius: 0, fill: true, tension: 0.3
   }], { legend: false, yTitle: 'm' });
+  updateResolutionReadout('level', ms, g.length);
 
   const hs = d.map(r => parseFloat(r.H)).filter(x => !isNaN(x));
   const mean = arr => (arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(4);
@@ -4365,6 +4383,7 @@ function renderVelocity() {
   const grouped = avgByIntervalMulti(d, [...pathFields, 'vm', 'c'], ms);
   const labels = grouped.map(g => g.TimeStamp);
   const ds = grouped;
+  updateResolutionReadout('velocity', ms, grouped.length);
   const datasets = state.activePaths.map(p => ({
     data: ds.map(r => r[pathCol('vLayer_', p)]),
     borderColor: pathColor(p).line,
@@ -4424,6 +4443,7 @@ function renderSignal() {
   const grouped = avgByIntervalMulti(d, [...pathFields, 'c', 'vm'], ms);
   const labels = grouped.map(g => g.TimeStamp);
   const ds = grouped;
+  updateResolutionReadout('signal', ms, grouped.length);
 
   // Check which column groups actually exist in this file
   const hasGain = colExists('gainfwd_');
@@ -5381,6 +5401,7 @@ function renderCustomChart() {
   const grouped = avgByIntervalMulti(d, fields, ms);
   const labels = grouped.map(g => g.TimeStamp);
   const ds = grouped;
+  updateResolutionReadout('custom', ms, grouped.length);
 
   // Assign one Y-axis per distinct unit among the active series
   const unitOrder = [];
