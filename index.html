@@ -958,10 +958,15 @@
         <div id="overviewContent" style="display:none">
           <div class="view-res-bar">
             <select class="select-input" id="res-overview" onchange="renderOverviewCharts()">
-              <option value="all" data-i18n-opt="res_all">5 min</option>
-              <option value="hourly" selected data-i18n-opt="res_hourly">Stündlich</option>
-              <option value="daily" data-i18n-opt="res_daily">Täglich</option>
+              <option value="30s" data-i18n-opt="res_30s">30 Sek.</option>
+              <option value="1m" data-i18n-opt="res_1m">1 Min.</option>
+              <option value="2m" data-i18n-opt="res_2m">2 Min.</option>
+              <option value="5m" selected data-i18n-opt="res_5m">5 Min.</option>
+              <option value="15m" data-i18n-opt="res_15m">15 Min.</option>
+              <option value="60m" data-i18n-opt="res_60m">60 Min.</option>
+              <option value="24h" data-i18n-opt="res_24h">24 Std.</option>
             </select>
+            <span class="native-interval-badge" style="font-size:10px;color:var(--text3);margin-left:6px"></span>
           </div>
           <div class="metrics-row" id="metricsRow"></div>
           <div class="grid-2">
@@ -1000,10 +1005,15 @@
         <!-- Controls -->
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
           <select class="select-input" id="hauptResolution" onchange="renderHauptdaten()">
-            <option value="all" data-i18n-opt="res_all">5 min</option>
-            <option value="hourly" selected data-i18n-opt="res_hourly">Stündlich</option>
-            <option value="daily" data-i18n-opt="res_daily">Täglich</option>
+            <option value="30s" data-i18n-opt="res_30s">30 Sek.</option>
+            <option value="1m" data-i18n-opt="res_1m">1 Min.</option>
+            <option value="2m" data-i18n-opt="res_2m">2 Min.</option>
+            <option value="5m" selected data-i18n-opt="res_5m">5 Min.</option>
+            <option value="15m" data-i18n-opt="res_15m">15 Min.</option>
+            <option value="60m" data-i18n-opt="res_60m">60 Min.</option>
+            <option value="24h" data-i18n-opt="res_24h">24 Std.</option>
           </select>
+          <span class="native-interval-badge" style="font-size:10px;color:var(--text3)"></span>
           <span style="font-size:11px;color:var(--text3)">
             <span style="display:inline-block;width:24px;height:3px;background:#1E88E5;vertical-align:middle;margin-right:4px;border-radius:2px"></span><span data-i18n="hd_q">Q (m³/s)</span>
             <span style="display:inline-block;width:24px;height:3px;background:#00897B;vertical-align:middle;margin:0 4px 0 12px;border-radius:2px"></span><span data-i18n="hd_h">H (m)</span>
@@ -1045,10 +1055,15 @@
         <!-- Resolution selector -->
         <div class="view-res-bar">
           <select class="select-input" id="res-flow" onchange="renderFlow()">
-            <option value="all" data-i18n-opt="res_all">5 min</option>
-            <option value="hourly" selected data-i18n-opt="res_hourly">Stündlich</option>
-            <option value="daily" data-i18n-opt="res_daily">Täglich</option>
+            <option value="30s" data-i18n-opt="res_30s">30 Sek.</option>
+            <option value="1m" data-i18n-opt="res_1m">1 Min.</option>
+            <option value="2m" data-i18n-opt="res_2m">2 Min.</option>
+            <option value="5m" selected data-i18n-opt="res_5m">5 Min.</option>
+            <option value="15m" data-i18n-opt="res_15m">15 Min.</option>
+            <option value="60m" data-i18n-opt="res_60m">60 Min.</option>
+            <option value="24h" data-i18n-opt="res_24h">24 Std.</option>
           </select>
+          <span class="native-interval-badge" style="font-size:10px;color:var(--text3);margin-left:6px"></span>
         </div>
         <div class="metrics-row" id="flowMetrics"></div>
         <div class="chart-card">
@@ -1087,10 +1102,15 @@
         <!-- Resolution selector -->
         <div class="view-res-bar">
           <select class="select-input" id="res-level" onchange="renderLevel()">
-            <option value="all" data-i18n-opt="res_all">5 min</option>
-            <option value="hourly" selected data-i18n-opt="res_hourly">Stündlich</option>
-            <option value="daily" data-i18n-opt="res_daily">Täglich</option>
+            <option value="30s" data-i18n-opt="res_30s">30 Sek.</option>
+            <option value="1m" data-i18n-opt="res_1m">1 Min.</option>
+            <option value="2m" data-i18n-opt="res_2m">2 Min.</option>
+            <option value="5m" selected data-i18n-opt="res_5m">5 Min.</option>
+            <option value="15m" data-i18n-opt="res_15m">15 Min.</option>
+            <option value="60m" data-i18n-opt="res_60m">60 Min.</option>
+            <option value="24h" data-i18n-opt="res_24h">24 Std.</option>
           </select>
+          <span class="native-interval-badge" style="font-size:10px;color:var(--text3);margin-left:6px"></span>
         </div>
         <div class="chart-card">
           <div class="chart-header">
@@ -1131,10 +1151,15 @@
         <!-- Resolution selector -->
         <div class="view-res-bar">
           <select class="select-input" id="res-velocity" onchange="renderVelocity()">
-            <option value="all" data-i18n-opt="res_all">5 min</option>
-            <option value="hourly" selected data-i18n-opt="res_hourly">Stündlich</option>
-            <option value="daily" data-i18n-opt="res_daily">Täglich</option>
+            <option value="30s" data-i18n-opt="res_30s">30 Sek.</option>
+            <option value="1m" data-i18n-opt="res_1m">1 Min.</option>
+            <option value="2m" data-i18n-opt="res_2m">2 Min.</option>
+            <option value="5m" selected data-i18n-opt="res_5m">5 Min.</option>
+            <option value="15m" data-i18n-opt="res_15m">15 Min.</option>
+            <option value="60m" data-i18n-opt="res_60m">60 Min.</option>
+            <option value="24h" data-i18n-opt="res_24h">24 Std.</option>
           </select>
+          <span class="native-interval-badge" style="font-size:10px;color:var(--text3);margin-left:6px"></span>
         </div>
         <div class="chart-card">
           <div class="chart-header">
@@ -1171,10 +1196,15 @@
         <!-- Resolution selector -->
         <div class="view-res-bar">
           <select class="select-input" id="res-signal" onchange="renderSignal()">
-            <option value="all" data-i18n-opt="res_all">5 min</option>
-            <option value="hourly" selected data-i18n-opt="res_hourly">Stündlich</option>
-            <option value="daily" data-i18n-opt="res_daily">Täglich</option>
+            <option value="30s" data-i18n-opt="res_30s">30 Sek.</option>
+            <option value="1m" data-i18n-opt="res_1m">1 Min.</option>
+            <option value="2m" data-i18n-opt="res_2m">2 Min.</option>
+            <option value="5m" selected data-i18n-opt="res_5m">5 Min.</option>
+            <option value="15m" data-i18n-opt="res_15m">15 Min.</option>
+            <option value="60m" data-i18n-opt="res_60m">60 Min.</option>
+            <option value="24h" data-i18n-opt="res_24h">24 Std.</option>
           </select>
+          <span class="native-interval-badge" style="font-size:10px;color:var(--text3);margin-left:6px"></span>
         </div>
         <div class="chart-card">
           <div class="chart-header">
@@ -1244,10 +1274,15 @@
       <div class="view" id="view-custom">
         <div class="view-res-bar">
           <select class="select-input" id="res-custom" onchange="renderCustomChart()">
-            <option value="all" data-i18n-opt="res_all">5 min</option>
-            <option value="hourly" selected data-i18n-opt="res_hourly">Stündlich</option>
-            <option value="daily" data-i18n-opt="res_daily">Täglich</option>
+            <option value="30s" data-i18n-opt="res_30s">30 Sek.</option>
+            <option value="1m" data-i18n-opt="res_1m">1 Min.</option>
+            <option value="2m" data-i18n-opt="res_2m">2 Min.</option>
+            <option value="5m" selected data-i18n-opt="res_5m">5 Min.</option>
+            <option value="15m" data-i18n-opt="res_15m">15 Min.</option>
+            <option value="60m" data-i18n-opt="res_60m">60 Min.</option>
+            <option value="24h" data-i18n-opt="res_24h">24 Std.</option>
           </select>
+          <span class="native-interval-badge" style="font-size:10px;color:var(--text3);margin-left:6px"></span>
         </div>
         <div class="chart-card">
           <div class="chart-header">
@@ -1542,6 +1577,8 @@ const TRANSLATIONS = {
     title_diag:'Diagnose-Daten', title_analysis:'Analyse & Diagnose',
     title_params:'Geräteparameter', title_rawdata:'Rohdaten',
     res_all:'5 min', res_hourly:'Stündlich', res_daily:'Täglich',
+    res_30s:'30 Sek.', res_1m:'1 Min.', res_2m:'2 Min.', res_5m:'5 Min.', res_15m:'15 Min.', res_60m:'60 Min.', res_24h:'24 Std.',
+    lbl_file_interval:'Datenintervall der Datei',
     tab_summary:'Zusammenfassung', tab_params_rec:'Parameterempfehlungen',
     tab_service:'Serviceempfehlungen', tab_environment:'Umgebungseinflüsse', tab_errors:'Fehlercodes',
     drop_title:'CSV-Datei laden', drop_sub:'Datei hierher ziehen oder klicken zum Auswählen',
@@ -1699,6 +1736,8 @@ const TRANSLATIONS = {
     title_diag:'Diagnostics', title_analysis:'Analysis & Diagnosis',
     title_params:'Device Parameters', title_rawdata:'Raw Data',
     res_all:'5 min', res_hourly:'Hourly', res_daily:'Daily',
+    res_30s:'30 sec', res_1m:'1 min', res_2m:'2 min', res_5m:'5 min', res_15m:'15 min', res_60m:'60 min', res_24h:'24 hr',
+    lbl_file_interval:'File data interval',
     tab_summary:'Summary', tab_params_rec:'Parameter Recommendations',
     tab_service:'Service Recommendations', tab_environment:'Environmental Influences', tab_errors:'Error Codes',
     drop_title:'Load CSV File', drop_sub:'Drag file here or click to select',
@@ -3348,6 +3387,7 @@ function processData() {
     }
   });
   state.filtered = [...state.raw];
+  state.nativeIntervalMs = detectNativeIntervalMs(state.raw);
 
   // Update month/day filters
   populateFilters();
@@ -3371,13 +3411,15 @@ function processData() {
     <div class="device-row"><span>${t('dev_from')}</span><span>${first.TimeStamp?.substring(0,10) || '–'}</span></div>
     <div class="device-row"><span>${t('dev_to_lbl')}</span><span>${last.TimeStamp?.substring(0,10) || '–'}</span></div>
     <div class="device-row"><span>${t('dev_paths')}</span><span>${state.activePaths.length}</span></div>
-    <div class="device-row"><span>${t('dev_interval')}</span><span>5 min</span></div>
+    <div class="device-row"><span>${t('dev_interval')}</span><span>${formatIntervalMs(state.nativeIntervalMs)}</span></div>
     ${formatBadge}
     <div id="diagLoadedBadge" style="display:none;margin-top:5px;font-size:10px;background:var(--gwf-teal-light);color:var(--gwf-teal);padding:2px 7px;border-radius:3px;font-weight:500"><span data-i18n="dev_diag_loaded">🩺 Diagnose geladen</span></div>
   `;
 
   buildPathChips();
   initRawDatePickers();
+  applyResolutionDefaults();
+  updateNativeIntervalBadges();
   renderCurrentView();
 }
 
@@ -3504,6 +3546,133 @@ function avgBy(data, field, groupFn) {
     if (!isNaN(v)) { map[key].sum += v; map[key].count++; }
   });
   return Object.entries(map).sort(([a],[b]) => a.localeCompare(b)).map(([k, v]) => ({ label: k, value: v.count ? v.sum / v.count : 0 }));
+}
+
+// ===================== UNIFIED RESOLUTION SYSTEM (app-wide) =====================
+// Replaces the old per-tab daily/hourly/raw special-casing with real numeric time
+// buckets, so the same mechanism works for 30s/1m/2m/5m/15m/60m/24h everywhere.
+const RESOLUTION_INTERVALS = [
+  { value: '30s', ms: 30 * 1000 },
+  { value: '1m',  ms: 60 * 1000 },
+  { value: '2m',  ms: 2 * 60 * 1000 },
+  { value: '5m',  ms: 5 * 60 * 1000 },
+  { value: '15m', ms: 15 * 60 * 1000 },
+  { value: '60m', ms: 60 * 60 * 1000 },
+  { value: '24h', ms: 24 * 60 * 60 * 1000 },
+];
+function resolutionIntervalMs(val) {
+  const found = RESOLUTION_INTERVALS.find(r => r.value === val);
+  return found ? found.ms : 5 * 60 * 1000;
+}
+function formatBucketLabel(bucketStartMs, ms) {
+  // Always keeps the full YYYY-MM-DD prefix (never truncates it away just for
+  // display) — some code elsewhere compares TimeStamp strings lexicographically
+  // for date-range filtering, which silently breaks if the year/month/day is dropped.
+  const d = new Date(bucketStartMs);
+  const pad = n => String(n).padStart(2, '0');
+  const YYYY = d.getFullYear();
+  const MM = pad(d.getMonth() + 1), DD = pad(d.getDate());
+  const hh = pad(d.getHours()), mm = pad(d.getMinutes()), ss = pad(d.getSeconds());
+  if (ms >= 24 * 60 * 60 * 1000) return `${YYYY}-${MM}-${DD}`;
+  if (ms >= 60 * 60 * 1000) return `${YYYY}-${MM}-${DD} ${hh}:00`;
+  if (ms >= 60 * 1000) return `${YYYY}-${MM}-${DD} ${hh}:${mm}`;
+  return `${YYYY}-${MM}-${DD} ${hh}:${mm}:${ss}`;
+}
+function rowTimeMs(r) {
+  if (r._ts instanceof Date && !isNaN(r._ts)) return r._ts.getTime();
+  const t = new Date((r.TimeStamp || '').replace(/\//g, '-')).getTime();
+  return isNaN(t) ? NaN : t;
+}
+// Groups by real numeric time buckets (not string-prefix truncation, which only
+// works for hour/day boundaries). Automatically thins very dense results so
+// charts stay responsive regardless of how fine the chosen interval is.
+function avgByInterval(data, field, ms, maxPoints = 2000) {
+  const buckets = new Map();
+  data.forEach(r => {
+    const t = rowTimeMs(r);
+    if (isNaN(t)) return;
+    const v = parseFloat(r[field]);
+    if (isNaN(v)) return;
+    const bucketStart = Math.floor(t / ms) * ms;
+    if (!buckets.has(bucketStart)) buckets.set(bucketStart, { sum: 0, count: 0 });
+    const b = buckets.get(bucketStart);
+    b.sum += v; b.count++;
+  });
+  let entries = [...buckets.entries()].sort((a, b) => a[0] - b[0]);
+  if (entries.length > maxPoints) {
+    const step = Math.ceil(entries.length / maxPoints);
+    entries = entries.filter((_, i) => i % step === 0);
+  }
+  return entries.map(([bucketStart, b]) => ({ label: formatBucketLabel(bucketStart, ms), value: b.sum / b.count }));
+}
+// Multi-field version: one pass groups every requested field by the same time
+// buckets, so multiple series (e.g. Q/H/vm, or Custom's whole field list) share
+// exactly the same x-axis buckets without re-scanning the dataset per field.
+function avgByIntervalMulti(data, fields, ms, maxPoints = 2000) {
+  const buckets = new Map();
+  data.forEach(r => {
+    const t = rowTimeMs(r);
+    if (isNaN(t)) return;
+    const bucketStart = Math.floor(t / ms) * ms;
+    let b = buckets.get(bucketStart);
+    if (!b) { b = {}; fields.forEach(f => { b[f] = { sum: 0, count: 0 }; }); buckets.set(bucketStart, b); }
+    fields.forEach(f => {
+      const v = parseFloat(r[f]);
+      if (!isNaN(v)) { b[f].sum += v; b[f].count++; }
+    });
+  });
+  let entries = [...buckets.entries()].sort((a, b) => a[0] - b[0]);
+  if (entries.length > maxPoints) {
+    const step = Math.ceil(entries.length / maxPoints);
+    entries = entries.filter((_, i) => i % step === 0);
+  }
+  return entries.map(([bucketStart, b]) => {
+    const row = { TimeStamp: formatBucketLabel(bucketStart, ms) };
+    fields.forEach(f => { row[f] = b[f].count ? b[f].sum / b[f].count : null; });
+    return row;
+  });
+}
+// Detects the file's native logging interval as the median gap between
+// consecutive timestamps (sampled, so it stays fast on large files).
+function detectNativeIntervalMs(rows) {
+  const times = rows.map(rowTimeMs).filter(t => !isNaN(t)).sort((a, b) => a - b);
+  if (times.length < 2) return null;
+  const diffs = [];
+  const sampleLimit = Math.min(times.length, 500);
+  for (let i = 1; i < sampleLimit; i++) {
+    const diff = times[i] - times[i - 1];
+    if (diff > 0) diffs.push(diff);
+  }
+  if (!diffs.length) return null;
+  diffs.sort((a, b) => a - b);
+  return diffs[Math.floor(diffs.length / 2)];
+}
+function formatIntervalMs(ms) {
+  if (ms === null || ms === undefined) return '–';
+  if (ms >= 60 * 60 * 1000) { const h = ms / (60 * 60 * 1000); return `${h % 1 === 0 ? h : h.toFixed(1)} h`; }
+  if (ms >= 60 * 1000) { const m = ms / (60 * 1000); return `${m % 1 === 0 ? m : m.toFixed(1)} min`; }
+  return `${Math.round(ms / 1000)} s`;
+}
+// Updates every "(Datei: X)" badge placed next to a resolution dropdown.
+function updateNativeIntervalBadges() {
+  const text = state.nativeIntervalMs ? `(${t('lbl_file_interval')}: ${formatIntervalMs(state.nativeIntervalMs)})` : '';
+  document.querySelectorAll('.native-interval-badge').forEach(el => { el.textContent = text; });
+}
+// On (re)load of a file, default every resolution dropdown to the coarsest
+// interval that is still >= the file's own native logging interval — avoids
+// defaulting to e.g. "30 sec" on a file that only has 5-min readings.
+const RESOLUTION_SELECT_IDS = ['res-overview', 'hauptResolution', 'res-flow', 'res-level', 'res-velocity', 'res-signal', 'res-custom'];
+function applyResolutionDefaults() {
+  const native = state.nativeIntervalMs;
+  let defaultVal = '5m';
+  if (native) {
+    const match = RESOLUTION_INTERVALS.find(r => r.ms >= native * 0.9) || RESOLUTION_INTERVALS[RESOLUTION_INTERVALS.length - 1];
+    defaultVal = match.value;
+  }
+  RESOLUTION_SELECT_IDS.forEach(id => {
+    const sel = document.getElementById(id);
+    if (sel) sel.value = defaultVal;
+  });
 }
 
 function createLineChart(canvasId, labels, datasets, opts = {}) {
@@ -3732,21 +3901,14 @@ function getRes(viewId) {
   // Falls back through view-specific → legacy → default
   return document.getElementById(`res-${viewId}`)?.value
       || document.getElementById('hauptResolution')?.value
-      || 'hourly';
+      || '5m';
 }
 
 // Apply resolution to a dataset: returns {labels, data} arrays
 function applyResolution(d, field, res) {
-  if (res === 'daily') {
-    const g = avgBy(d, field, r => r.TimeStamp?.substring(0, 10));
-    return { labels: g.map(x => x.label), vals: g.map(x => x.value) };
-  } else if (res === 'hourly') {
-    const g = avgBy(d, field, r => r.TimeStamp?.substring(0, 13));
-    return { labels: g.map(x => x.label.substring(5)), vals: g.map(x => x.value) };
-  } else {
-    const { data: ds } = downsample(d, 600);
-    return { labels: makeTimeLabels(ds), vals: ds.map(r => parseFloat(r[field])), ds };
-  }
+  const ms = resolutionIntervalMs(res);
+  const g = avgByInterval(d, field, ms);
+  return { labels: g.map(x => x.label), vals: g.map(x => x.value) };
 }
 
 // ===================== HAUPTDATEN =====================
@@ -3755,33 +3917,14 @@ const HAUPT_CHARTS = ['chartHaupt'];
 function renderHauptdaten() {
   const d = state.filtered;
   const bi = (de, en) => currentLang === 'en' ? en : de;
-  const res = document.getElementById('hauptResolution')?.value || 'hourly';
+  const res = document.getElementById('hauptResolution')?.value || '5m';
+  const ms = resolutionIntervalMs(res);
 
-  let labels, qData, hData, vmData;
-
-  if (res === 'daily') {
-    const qG  = avgBy(d, 'Q',  r => r.TimeStamp?.substring(0,10));
-    const hG  = avgBy(d, 'H',  r => r.TimeStamp?.substring(0,10));
-    const vmG = avgBy(d, 'vm', r => r.TimeStamp?.substring(0,10));
-    labels = qG.map(g => g.label);
-    qData  = qG.map(g => g.value);
-    hData  = hG.map(g => g.value);
-    vmData = vmG.map(g => g.value);
-  } else if (res === 'hourly') {
-    const qG  = avgBy(d, 'Q',  r => r.TimeStamp?.substring(0,13));
-    const hG  = avgBy(d, 'H',  r => r.TimeStamp?.substring(0,13));
-    const vmG = avgBy(d, 'vm', r => r.TimeStamp?.substring(0,13));
-    labels = qG.map(g => g.label.substring(5));
-    qData  = qG.map(g => g.value);
-    hData  = hG.map(g => g.value);
-    vmData = vmG.map(g => g.value);
-  } else {
-    const { data: ds } = rawOrDownsample(d);
-    labels = makeTimeLabels(ds);
-    qData  = ds.map(r => r.Q);
-    hData  = ds.map(r => r.H);
-    vmData = ds.map(r => r.vm);
-  }
+  const grouped = avgByIntervalMulti(d, ['Q', 'H', 'vm'], ms);
+  const labels = grouped.map(g => g.TimeStamp);
+  const qData = grouped.map(g => g.Q);
+  const hData = grouped.map(g => g.H);
+  const vmData = grouped.map(g => g.vm);
 
   destroyChart('chartHaupt');
   const canvas = document.getElementById('chartHaupt');
@@ -3949,55 +4092,26 @@ function renderOverview() {
 function renderOverviewCharts() {
   const d = state.filtered;
   const res = getRes('overview');
+  const ms = resolutionIntervalMs(res);
   const bi = (de, en) => currentLang === 'en' ? en : de;
+  const pointStyle = ms >= 24 * 60 * 60 * 1000 ? { borderWidth: 2, pointRadius: 3, tension: 0.2 } : { borderWidth: 1.5, pointRadius: 0, tension: 0.3 };
 
-  if (res === 'hourly') {
-    const grouped = avgBy(d, 'Q', r => r.TimeStamp?.substring(0,13));
-    const glabels = grouped.map(g => g.label.substring(5));
-    createLineChart('chartQ', glabels, [{
-      label: bi('Q (m³/s)','Q (m³/s)'), data: grouped.map(g => g.value.toFixed(4)),
-      borderColor: '#1E88E5', backgroundColor: 'rgba(30,136,229,0.08)',
-      borderWidth: 1.5, pointRadius: 0, fill: true, tension: 0.3
-    }], { legend: false, yTitle: 'm³/s' });
-    const hGrouped = avgBy(d, 'H', r => r.TimeStamp?.substring(0,13));
-    createLineChart('chartH', hGrouped.map(g => g.label.substring(5)), [{
-      label: bi('H (m)','H (m)'), data: hGrouped.map(g => g.value.toFixed(4)),
-      borderColor: '#00897B', backgroundColor: 'rgba(0,137,123,0.08)',
-      borderWidth: 1.5, pointRadius: 0, fill: true, tension: 0.3
-    }], { legend: false, yTitle: 'm' });
-  } else if (res === 'daily') {
-    const grouped = avgBy(d, 'Q', r => r.TimeStamp?.substring(0,10));
-    createLineChart('chartQ', grouped.map(g => g.label), [{
-      label: bi('Q (m³/s)','Q (m³/s)'), data: grouped.map(g => g.value.toFixed(4)),
-      borderColor: '#1E88E5', backgroundColor: 'rgba(30,136,229,0.1)',
-      borderWidth: 2, pointRadius: 3, fill: true, tension: 0.2
-    }], { legend: false, yTitle: 'm³/s' });
-    const hGrouped = avgBy(d, 'H', r => r.TimeStamp?.substring(0,10));
-    createLineChart('chartH', hGrouped.map(g => g.label), [{
-      label: bi('H (m)','H (m)'), data: hGrouped.map(g => g.value.toFixed(4)),
-      borderColor: '#00897B', backgroundColor: 'rgba(0,137,123,0.1)',
-      borderWidth: 2, pointRadius: 3, fill: true, tension: 0.2
-    }], { legend: false, yTitle: 'm' });
-  } else {
-    const { data: ds, step } = downsample(d);
-    const labels = makeTimeLabels(ds);
-    createLineChart('chartQ', labels, [{
-      label: bi('Q (m³/s)','Q (m³/s)'), data: ds.map(r => r.Q),
-      borderColor: '#1E88E5', backgroundColor: 'rgba(30,136,229,0.08)',
-      borderWidth: 1, pointRadius: 0, fill: true, tension: 0.2
-    }], { legend: false, yTitle: 'm³/s' });
-    createLineChart('chartH', labels, [{
-      label: bi('H (m)','H (m)'), data: ds.map(r => r.H),
-      borderColor: '#00897B', backgroundColor: 'rgba(0,137,123,0.08)',
-      borderWidth: 1, pointRadius: 0, fill: true, tension: 0.2
-    }], { legend: false, yTitle: 'm' });
-  }
+  const qGrouped = avgByInterval(d, 'Q', ms);
+  createLineChart('chartQ', qGrouped.map(g => g.label), [{
+    label: bi('Q (m³/s)','Q (m³/s)'), data: qGrouped.map(g => g.value.toFixed(4)),
+    borderColor: '#1E88E5', backgroundColor: 'rgba(30,136,229,0.08)', fill: true, ...pointStyle
+  }], { legend: false, yTitle: 'm³/s' });
 
-  const vmGrouped = avgBy(d, 'vm', r => r.TimeStamp?.substring(0,13));
-  createLineChart('chartVm', vmGrouped.map(g => g.label.substring(5)), [{
+  const hGrouped = avgByInterval(d, 'H', ms);
+  createLineChart('chartH', hGrouped.map(g => g.label), [{
+    label: bi('H (m)','H (m)'), data: hGrouped.map(g => g.value.toFixed(4)),
+    borderColor: '#00897B', backgroundColor: 'rgba(0,137,123,0.08)', fill: true, ...pointStyle
+  }], { legend: false, yTitle: 'm' });
+
+  const vmGrouped = avgByInterval(d, 'vm', ms);
+  createLineChart('chartVm', vmGrouped.map(g => g.label), [{
     label: bi('vm (m/s)','vm (m/s)'), data: vmGrouped.map(g => g.value.toFixed(4)),
-    borderColor: '#E8A000', backgroundColor: 'rgba(232,160,0,0.07)',
-    borderWidth: 1.5, pointRadius: 0, fill: true, tension: 0.3
+    borderColor: '#E8A000', backgroundColor: 'rgba(232,160,0,0.07)', fill: true, ...pointStyle
   }], { legend: false, yTitle: 'm/s' });
 }
 
@@ -4006,44 +4120,13 @@ function renderFlow() {
   const d = state.filtered;
   const bi = (de, en) => currentLang === 'en' ? en : de;
   const res = getRes('flow');
+  const ms = resolutionIntervalMs(res);
 
-  // Resolve data based on resolution
-  let ds, labels;
-  if (res === 'daily') {
-    const g = avgBy(d, 'Q', r => r.TimeStamp?.substring(0, 10));
-    labels = g.map(x => x.label);
-    ds = labels.map(lbl => d.filter(r => r.TimeStamp?.startsWith(lbl)).reduce((acc, r) => {
-      if (!acc) return { ...r };
-      Object.keys(r).forEach(k => { if (typeof r[k] === 'number') acc[k] = ((acc[k] || 0) + r[k]) / 2; });
-      return acc;
-    }, null)).filter(Boolean);
-    // For daily: use avgBy per field
-    const makeDs = (field) => avgBy(d, field, r => r.TimeStamp?.substring(0, 10)).map(x => x.value);
-    ds = labels.map((lbl, i) => {
-      const rows = d.filter(r => r.TimeStamp?.startsWith(lbl));
-      const avg = (f) => { const vs = rows.map(r => parseFloat(r[f])).filter(x => !isNaN(x)); return vs.length ? vs.reduce((a,b)=>a+b)/vs.length : null; };
-      const obj = { TimeStamp: lbl + '/01 00:00:00' };
-      ['Q', 'H', 'vm', 'DVol', 'VolumePos', 'VolumeNeg'].forEach(f => obj[f] = avg(f));
-      state.detectedPaths.forEach(p => { obj[pathCol('Q_', p)] = avg(pathCol('Q_', p)); });
-      return obj;
-    });
-  } else if (res === 'hourly') {
-    const g = avgBy(d, 'Q', r => r.TimeStamp?.substring(0, 13));
-    labels = g.map(x => x.label.substring(5));
-    ds = labels.map((lbl, i) => {
-      const fullLbl = g[i].label;
-      const rows = d.filter(r => r.TimeStamp?.startsWith(fullLbl));
-      const avg = (f) => { const vs = rows.map(r => parseFloat(r[f])).filter(x => !isNaN(x)); return vs.length ? vs.reduce((a,b)=>a+b)/vs.length : null; };
-      const obj = { TimeStamp: fullLbl + ':00:00' };
-      ['Q', 'H', 'vm', 'DVol', 'VolumePos', 'VolumeNeg'].forEach(f => obj[f] = avg(f));
-      state.detectedPaths.forEach(p => { obj[pathCol('Q_', p)] = avg(pathCol('Q_', p)); });
-      return obj;
-    });
-  } else {
-    const result = rawOrDownsample(d);
-    ds = result.data;
-    labels = makeTimeLabels(ds);
-  }
+  const baseFields = ['Q', 'H', 'vm', 'DVol', 'VolumePos', 'VolumeNeg'];
+  const pathFields = state.detectedPaths.map(p => pathCol('Q_', p));
+  const grouped = avgByIntervalMulti(d, [...baseFields, ...pathFields], ms);
+  const labels = grouped.map(g => g.TimeStamp);
+  const ds = grouped;
 
   // Initial metrics from full filtered dataset
   updateFlowMetrics(d);
@@ -4224,17 +4307,10 @@ function renderLevel() {
   const d = state.filtered;
   const bi = (de, en) => currentLang === 'en' ? en : de;
   const res = getRes('level');
-  let labels, hData;
-  if (res === 'daily') {
-    const g = avgBy(d, 'H', r => r.TimeStamp?.substring(0, 10));
-    labels = g.map(x => x.label); hData = g.map(x => x.value);
-  } else if (res === 'hourly') {
-    const g = avgBy(d, 'H', r => r.TimeStamp?.substring(0, 13));
-    labels = g.map(x => x.label.substring(5)); hData = g.map(x => x.value);
-  } else {
-    const { data: dsR } = rawOrDownsample(d);
-    labels = makeTimeLabels(dsR); hData = dsR.map(r => r.H);
-  }
+  const ms = resolutionIntervalMs(res);
+  const g = avgByInterval(d, 'H', ms);
+  const labels = g.map(x => x.label);
+  const hData = g.map(x => x.value);
   createLineChart('chartLevel', labels, [{
     label: bi('H (m)','H (m)'), data: hData,
     borderColor: '#00897B', backgroundColor: 'rgba(0,137,123,0.1)',
@@ -4284,37 +4360,12 @@ function renderVelocity() {
   const d = state.filtered;
   const bi = (de, en) => currentLang === 'en' ? en : de;
   const res = getRes('velocity');
-  let ds, labels;
-  if (res === 'daily') {
-    const g = avgBy(d, 'vm', r => r.TimeStamp?.substring(0, 10));
-    labels = g.map(x => x.label);
-    ds = labels.map((lbl, i) => {
-      const rows = d.filter(r => r.TimeStamp?.startsWith(lbl));
-      const avg = f => { const vs = rows.map(r => parseFloat(r[f])).filter(x => !isNaN(x)); return vs.length ? vs.reduce((a,b)=>a+b)/vs.length : null; };
-      const obj = { TimeStamp: lbl + '/01 00:00:00' };
-      state.activePaths.forEach(p => { obj[pathCol('vLayer_', p)] = avg(pathCol('vLayer_', p)); });
-      obj.vm = avg('vm'); obj.c = avg('c');
-      return obj;
-    });
-  } else if (res === 'hourly') {
-    const g = avgBy(d, 'vm', r => r.TimeStamp?.substring(0, 13));
-    labels = g.map(x => x.label.substring(5));
-    ds = labels.map((lbl, i) => {
-      const fullLbl = g[i].label;
-      const rows = d.filter(r => r.TimeStamp?.startsWith(fullLbl));
-      const avg = f => { const vs = rows.map(r => parseFloat(r[f])).filter(x => !isNaN(x)); return vs.length ? vs.reduce((a,b)=>a+b)/vs.length : null; };
-      const obj = { TimeStamp: fullLbl + ':00:00' };
-      state.activePaths.forEach(p => { obj[pathCol('vLayer_', p)] = avg(pathCol('vLayer_', p)); });
-      obj.vm = avg('vm'); obj.c = avg('c');
-      return obj;
-    });
-  } else {
-    const result = rawOrDownsample(d);
-    ds = result.data; labels = makeTimeLabels(ds);
-  }
+  const ms = resolutionIntervalMs(res);
+  const pathFields = state.activePaths.map(p => pathCol('vLayer_', p));
+  const grouped = avgByIntervalMulti(d, [...pathFields, 'vm', 'c'], ms);
+  const labels = grouped.map(g => g.TimeStamp);
+  const ds = grouped;
   const datasets = state.activePaths.map(p => ({
-
-    label: `vLayer_${String(p).padStart(2,'0')}`,
     data: ds.map(r => r[pathCol('vLayer_', p)]),
     borderColor: pathColor(p).line,
     borderWidth: 1.2, pointRadius: 0, tension: 0.2, fill: false
@@ -4367,38 +4418,12 @@ function renderSignal() {
   const bi = (de, en) => currentLang === 'en' ? en : de;
   const d = state.filtered;
   const res = getRes('signal');
-  let ds, labels;
-  if (res === 'daily') {
-    const g = avgBy(d, 'vm', r => r.TimeStamp?.substring(0, 10));
-    labels = g.map(x => x.label);
-    ds = labels.map((lbl, i) => {
-      const rows = d.filter(r => r.TimeStamp?.startsWith(lbl));
-      const avg = f => { const vs = rows.map(r => parseFloat(r[f])).filter(x => !isNaN(x)); return vs.length ? vs.reduce((a,b)=>a+b)/vs.length : null; };
-      const obj = { TimeStamp: lbl + '/01 00:00:00' };
-      state.activePaths.forEach(p => {
-        ['snrfwd_','snrrev_','gainfwd_','gainrev_','corrfwd_','corrrev_','dtt_','meantt_','cPath_','vLayer_'].forEach(pfx => { obj[pathCol(pfx, p)] = avg(pathCol(pfx, p)); });
-      });
-      obj.c = avg('c'); obj.vm = avg('vm');
-      return obj;
-    });
-  } else if (res === 'hourly') {
-    const g = avgBy(d, 'vm', r => r.TimeStamp?.substring(0, 13));
-    labels = g.map(x => x.label.substring(5));
-    ds = labels.map((lbl, i) => {
-      const fullLbl = g[i].label;
-      const rows = d.filter(r => r.TimeStamp?.startsWith(fullLbl));
-      const avg = f => { const vs = rows.map(r => parseFloat(r[f])).filter(x => !isNaN(x)); return vs.length ? vs.reduce((a,b)=>a+b)/vs.length : null; };
-      const obj = { TimeStamp: fullLbl + ':00:00' };
-      state.activePaths.forEach(p => {
-        ['snrfwd_','snrrev_','gainfwd_','gainrev_','corrfwd_','corrrev_','dtt_','meantt_','cPath_','vLayer_'].forEach(pfx => { obj[pathCol(pfx, p)] = avg(pathCol(pfx, p)); });
-      });
-      obj.c = avg('c'); obj.vm = avg('vm');
-      return obj;
-    });
-  } else {
-    const result = rawOrDownsample(d);
-    ds = result.data; labels = makeTimeLabels(ds);
-  }
+  const ms = resolutionIntervalMs(res);
+  const fieldPrefixes = ['snrfwd_','snrrev_','gainfwd_','gainrev_','corrfwd_','corrrev_','dtt_','meantt_','cPath_','vLayer_'];
+  const pathFields = state.activePaths.flatMap(p => fieldPrefixes.map(pfx => pathCol(pfx, p)));
+  const grouped = avgByIntervalMulti(d, [...pathFields, 'c', 'vm'], ms);
+  const labels = grouped.map(g => g.TimeStamp);
+  const ds = grouped;
 
   // Check which column groups actually exist in this file
   const hasGain = colExists('gainfwd_');
@@ -4571,32 +4596,11 @@ function renderPathSignalChart() {
   const d = state.filtered;
   const p = state.selectedSignalPath || state.activePaths[0];
   const res = getRes('signal');
-  let ds, labels;
-  if (res === 'daily') {
-    const g = avgBy(d, 'vm', r => r.TimeStamp?.substring(0,10));
-    labels = g.map(x => x.label);
-    ds = labels.map((lbl, i) => {
-      const rows = d.filter(r => r.TimeStamp?.startsWith(lbl));
-      const avg = f => { const vs = rows.map(r => parseFloat(r[f])).filter(x => !isNaN(x)); return vs.length ? vs.reduce((a,b)=>a+b)/vs.length : null; };
-      const obj = { TimeStamp: lbl };
-      SIGNAL_SERIES.forEach(s => { obj[s.field(p)] = avg(s.field(p)); });
-      return obj;
-    });
-  } else if (res === 'hourly') {
-    const g = avgBy(d, 'vm', r => r.TimeStamp?.substring(0,13));
-    labels = g.map(x => x.label.substring(5));
-    ds = labels.map((lbl, i) => {
-      const fullLbl = g[i].label;
-      const rows = d.filter(r => r.TimeStamp?.startsWith(fullLbl));
-      const avg = f => { const vs = rows.map(r => parseFloat(r[f])).filter(x => !isNaN(x)); return vs.length ? vs.reduce((a,b)=>a+b)/vs.length : null; };
-      const obj = { TimeStamp: fullLbl };
-      SIGNAL_SERIES.forEach(s => { obj[s.field(p)] = avg(s.field(p)); });
-      return obj;
-    });
-  } else {
-    const result = rawOrDownsample(d);
-    ds = result.data; labels = makeTimeLabels(ds);
-  }
+  const ms = resolutionIntervalMs(res);
+  const fields = SIGNAL_SERIES.map(s => s.field(p));
+  const grouped = avgByIntervalMulti(d, fields, ms);
+  const labels = grouped.map(g => g.TimeStamp);
+  const ds = grouped;
 
   // Build y-axes dynamically based on active series
   const usedAxes = new Set();
@@ -5373,22 +5377,10 @@ function renderCustomChart() {
   const fields = [...activeGlobal.map(s => s.field()), ...activeCells.map(c => c.s.field(c.p))];
 
   const d = state.filtered;
-  let ds, labels;
-  if (res === 'daily' || res === 'hourly') {
-    const groupLen = res === 'daily' ? 10 : 13;
-    const g = avgBy(d, 'vm', r => r.TimeStamp?.substring(0, groupLen));
-    labels = g.map(x => res === 'hourly' ? x.label.substring(5) : x.label);
-    ds = g.map(x => {
-      const rows = d.filter(r => r.TimeStamp?.startsWith(x.label));
-      const avg = f => { const vs = rows.map(r => parseFloat(r[f])).filter(v => !isNaN(v)); return vs.length ? vs.reduce((a,b)=>a+b)/vs.length : null; };
-      const obj = {};
-      fields.forEach(f => { obj[f] = avg(f); });
-      return obj;
-    });
-  } else {
-    const result = rawOrDownsample(d);
-    ds = result.data; labels = makeTimeLabels(ds);
-  }
+  const ms = resolutionIntervalMs(res);
+  const grouped = avgByIntervalMulti(d, fields, ms);
+  const labels = grouped.map(g => g.TimeStamp);
+  const ds = grouped;
 
   // Assign one Y-axis per distinct unit among the active series
   const unitOrder = [];
