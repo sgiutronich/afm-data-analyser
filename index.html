@@ -1574,6 +1574,7 @@ const TRANSLATIONS = {
     lbl_matrix_hint:'(Zeile / Spalte anklicken = alle umschalten)',
     tt_col:'Ganze Spalte umschalten', tt_row:'Ganze Zeile umschalten', tt_unavailable:'Nicht im Dateiexport enthalten',
     tt_path_color:'Pfad-Farbe ändern', tt_pair_both:'Klick = beide, F/R = einzeln',
+    btn_reset_all:'Alle zurücksetzen', tt_reset_all:'Alle Auswahlen (Matrix + globale Parameter) löschen',
     lbl_presets:'Gespeicherte Auswahl', ph_preset_name:'Name der Auswahl...', btn_save_preset:'+ Speichern',
     tt_preset_delete:'Auswahl löschen', confirm_preset_delete:'Auswahl "{name}" wirklich löschen?',
     lbl_axis_range:'Y-Achsen-Bereich', btn_axis_auto:'Auto',
@@ -1733,6 +1734,7 @@ const TRANSLATIONS = {
     lbl_matrix_hint:'(click a row/column label to toggle all)',
     tt_col:'Toggle entire column', tt_row:'Toggle entire row', tt_unavailable:'Not in this file export',
     tt_path_color:'Change path colour', tt_pair_both:'Click = both, F/R = individually',
+    btn_reset_all:'Reset all', tt_reset_all:'Clear all selections (matrix + global parameters)',
     lbl_presets:'Saved Selections', ph_preset_name:'Selection name...', btn_save_preset:'+ Save',
     tt_preset_delete:'Delete selection', confirm_preset_delete:'Really delete selection "{name}"?',
     lbl_axis_range:'Y-Axis Range', btn_axis_auto:'Auto',
@@ -1965,9 +1967,11 @@ function detectPaths(data) {
   if (!data.length) return [];
   const cols = Object.keys(data[0]);
   const found = new Set();
-  // Match columns like Q_01 … Q_10, vLayer_01 … vLayer_10, etc.
+  // Match columns like Q_01 … Q_10, vLayer_01 … vLayer_10, vPath_01 … vPath_10, etc.
+  // vPath was added for the ARVUS device family, which reports per-path velocity
+  // under that name instead of vLayer, and often for more paths than Q/vLayer cover.
   cols.forEach(c => {
-    const m = c.match(/^(?:Q|vLayer|snrfwd|ttfwd)_(\d+)$/);
+    const m = c.match(/^(?:Q|vLayer|vPath|snrfwd|ttfwd)_(\d+)$/);
     if (m) {
       const n = parseInt(m[1], 10);
       // Verify this path actually has non-null data
@@ -1987,6 +1991,15 @@ function colExists(prefix, paths) {
     const col = pathCol(prefix, p);
     return state.filtered.some(r => r[col] !== null && r[col] !== undefined && r[col] !== '' && !isNaN(parseFloat(r[col])));
   });
+}
+// Some device families (Kanalis) report per-path velocity as vLayer_XX; others
+// (ARVUS) use vPath_XX instead, and sometimes only for a subset of paths under
+// vLayer/Q while vPath covers all of them. Resolve per-path, since a single file
+// can legitimately have vLayer for some paths and only vPath for others.
+function velocityFieldForPath(p) {
+  const vLayerCol = pathCol('vLayer_', p);
+  const hasVLayer = state.filtered.some(r => r[vLayerCol] !== null && r[vLayerCol] !== undefined && r[vLayerCol] !== '' && !isNaN(parseFloat(r[vLayerCol])));
+  return hasVLayer ? vLayerCol : pathCol('vPath_', p);
 }
 // Detects the "choose data" export format and converts it to the standard monthly format.
 // Differences handled:
@@ -4379,13 +4392,15 @@ function renderVelocity() {
   const bi = (de, en) => currentLang === 'en' ? en : de;
   const res = getRes('velocity');
   const ms = resolutionIntervalMs(res);
-  const pathFields = state.activePaths.map(p => pathCol('vLayer_', p));
+  const velFieldByPath = {};
+  state.activePaths.forEach(p => { velFieldByPath[p] = velocityFieldForPath(p); });
+  const pathFields = state.activePaths.map(p => velFieldByPath[p]);
   const grouped = avgByIntervalMulti(d, [...pathFields, 'vm', 'c'], ms);
   const labels = grouped.map(g => g.TimeStamp);
   const ds = grouped;
   updateResolutionReadout('velocity', ms, grouped.length);
   const datasets = state.activePaths.map(p => ({
-    data: ds.map(r => r[pathCol('vLayer_', p)]),
+    data: ds.map(r => r[velFieldByPath[p]]),
     borderColor: pathColor(p).line,
     borderWidth: 1.2, pointRadius: 0, tension: 0.2, fill: false
   }));
@@ -4713,6 +4728,7 @@ const CUSTOM_GLOBAL_GROUPS = [
     groupKey: 'level',
     series: [
       { id: 'H',            field: () => 'H',            unit: 'm', color: '#00897B' },
+      { id: 'H_downstream', field: () => 'H-downstream', unit: 'm', color: '#00BFA5' },
       { id: 'H_external1',  field: () => 'H_external1',  unit: 'm', color: '#26A69A' },
       { id: 'H_external2',  field: () => 'H_external2',  unit: 'm', color: '#66BB6A' },
       { id: 'H_external3',  field: () => 'H_external3',  unit: 'm', color: '#9CCC65' },
@@ -4737,13 +4753,26 @@ const CUSTOM_GLOBAL_GROUPS = [
       { id: 'STATUS',   field: () => 'STATUS',   unit: '',    color: '#C62828' },
       { id: 'OpHCount', field: () => 'OpHCount', unit: 'h',   color: '#6D4C41' },
     ]
+  },
+  {
+    // ARVUS-specific: control gate + standalone/solar power diagnostics.
+    // Absent on Kanalis files, so these simply never appear there.
+    groupKey: 'control_power',
+    series: [
+      { id: 'GatePerc', field: () => 'GatePerc', unit: '%',  color: '#7B1FA2' },
+      { id: 'SysVltg',  field: () => 'SysVltg',  unit: '?',  color: '#0277BD' },
+      { id: 'SysCurr',  field: () => 'SysCurr',  unit: 'A',  color: '#00838F' },
+      { id: 'SysAh',    field: () => 'SysAh',    unit: 'Ah', color: '#2E7D32' },
+      { id: 'SysWh',    field: () => 'SysWh',    unit: 'Wh', color: '#558B2F' },
+      { id: 'SysUptime',field: () => 'SysUptime',unit: 's',  color: '#616161' },
+    ]
   }
 ];
 const CUSTOM_GLOBAL_SERIES = CUSTOM_GLOBAL_GROUPS.flatMap(g => g.series);
 
 // Per-path series (rows in the matrix, before Fwd/Rev pairing)
 const CUSTOM_PATH_SERIES = [
-  { id: 'vLayer',      field: p => pathCol('vLayer_',      p), unit: 'm/s' },
+  { id: 'vLayer',      field: p => velocityFieldForPath(p), unit: 'm/s' },
   { id: 'Qp',          field: p => pathCol('Q_',           p), unit: 'm³/s' },
   { id: 'Vfwd',        field: p => pathCol('Vfwd_',        p), unit: 'V' },
   { id: 'Vrev',        field: p => pathCol('Vrev_',        p), unit: 'V' },
@@ -4761,6 +4790,12 @@ const CUSTOM_PATH_SERIES = [
   { id: 'noiselimfwd', field: p => pathCol('noiselimfwd_', p), unit: '%' },
   { id: 'noiselimrev', field: p => pathCol('noiselimrev_', p), unit: '%' },
   { id: 'STATUSp',     field: p => pathCol('STATUS_',      p), unit: '' },
+  // ARVUS-specific — absent on Kanalis files, so these rows simply stay hidden there
+  { id: 'Angle',       field: p => pathCol('Angle_',       p), unit: '°' },
+  { id: 'noisefwd',    field: p => pathCol('noisefwd_',    p), unit: '?' },
+  { id: 'noiserev',    field: p => pathCol('noiserev_',    p), unit: '?' },
+  { id: 'pwr1stfwd',   field: p => pathCol('pwr1stfwd_',   p), unit: '?' },
+  { id: 'pwr1strev',   field: p => pathCol('pwr1strev_',   p), unit: '?' },
 ];
 function customFindSeries(id) { return CUSTOM_PATH_SERIES.find(s => s.id === id); }
 
@@ -4778,6 +4813,7 @@ const CUSTOM_SERIES_LABELS = {
   DVolNeg: { de: 'Tagesvolumen Neg', en: 'Daily Volume Neg' },
   DVolPos: { de: 'Tagesvolumen Pos', en: 'Daily Volume Pos' },
   H: { de: 'H (Pegel)', en: 'H (Level)' },
+  H_downstream: { de: 'H Unterstrom', en: 'H Downstream' },
   H_external1: { de: 'H Extern 1', en: 'H External 1' },
   H_external2: { de: 'H Extern 2', en: 'H External 2' },
   H_external3: { de: 'H Extern 3', en: 'H External 3' },
@@ -4809,6 +4845,17 @@ const CUSTOM_SERIES_LABELS = {
   noiselimfwd: { de: 'Rauschfenster Vorwärts', en: 'Noise Window Fwd' },
   noiselimrev: { de: 'Rauschfenster Rückwärts', en: 'Noise Window Rev' },
   STATUSp: { de: 'Status (nur intern)', en: 'Status (internal use)' },
+  Angle: { de: 'Neigungswinkel', en: 'Angle' },
+  noisefwd: { de: 'Rauschen Vorwärts', en: 'Noise Fwd' },
+  noiserev: { de: 'Rauschen Rückwärts', en: 'Noise Rev' },
+  pwr1stfwd: { de: 'Pwr 1st Vorwärts', en: 'Pwr 1st Fwd' },
+  pwr1strev: { de: 'Pwr 1st Rückwärts', en: 'Pwr 1st Rev' },
+  GatePerc: { de: 'Schieber-Öffnung', en: 'Gate Opening' },
+  SysVltg: { de: 'Systemspannung', en: 'System Voltage' },
+  SysCurr: { de: 'Systemstrom', en: 'System Current' },
+  SysAh: { de: 'Amperestunden (kumuliert)', en: 'Amp-hours (cumulative)' },
+  SysWh: { de: 'Wattstunden (kumuliert)', en: 'Watt-hours (cumulative)' },
+  SysUptime: { de: 'Systemlaufzeit', en: 'System Uptime' },
 };
 function customSeriesLabel(id) { return (CUSTOM_SERIES_LABELS[id] && CUSTOM_SERIES_LABELS[id][currentLang]) || id; }
 
@@ -4817,6 +4864,7 @@ const CUSTOM_GROUP_LABELS = {
   level:    { de: 'Pegel', en: 'Level' },
   velocity: { de: 'Geschwindigkeit / Schall (Mittelwert)', en: 'Velocity / Sound (mean)' },
   device:   { de: 'Gerät & Umgebung', en: 'Device & Environment' },
+  control_power: { de: 'Steuerung & Energie (ARVUS)', en: 'Control & Power (ARVUS)' },
 };
 function customGroupLabel(key) { return (CUSTOM_GROUP_LABELS[key] && CUSTOM_GROUP_LABELS[key][currentLang]) || key; }
 
@@ -4827,6 +4875,8 @@ const CUSTOM_PAIRED_LABELS = {
   corr:     { de: 'Korrelation (Fwd/Rev)',   en: 'Corr (Fwd/Rev)' },
   tt:       { de: 'Laufzeit (Fwd/Rev)',      en: 'TT (Fwd/Rev)' },
   noiselim: { de: 'Rauschfenster (Fwd/Rev)', en: 'Noise Window (Fwd/Rev)' },
+  noise:    { de: 'Rauschen (Fwd/Rev)',      en: 'Noise (Fwd/Rev)' },
+  pwr1st:   { de: 'Pwr 1st (Fwd/Rev)',       en: 'Pwr 1st (Fwd/Rev)' },
 };
 function customPairedLabel(id) { return (CUSTOM_PAIRED_LABELS[id] && CUSTOM_PAIRED_LABELS[id][currentLang]) || id; }
 
@@ -4836,6 +4886,7 @@ const CUSTOM_MATRIX_ROWS = [
   { type: 'single', s: customFindSeries('Qp') },
   { type: 'paired', id: 'vsig',     fwd: customFindSeries('Vfwd'),        rev: customFindSeries('Vrev'),        unit: 'V' },
   { type: 'single', s: customFindSeries('cPath') },
+  { type: 'single', s: customFindSeries('Angle') },
   { type: 'paired', id: 'snr',      fwd: customFindSeries('snrfwd'),      rev: customFindSeries('snrrev'),      unit: 'dB' },
   { type: 'paired', id: 'gain',     fwd: customFindSeries('gainfwd'),     rev: customFindSeries('gainrev'),     unit: 'dB' },
   { type: 'paired', id: 'corr',     fwd: customFindSeries('corrfwd'),     rev: customFindSeries('corrrev'),     unit: '%' },
@@ -4843,6 +4894,8 @@ const CUSTOM_MATRIX_ROWS = [
   { type: 'single', s: customFindSeries('meantt') },
   { type: 'paired', id: 'tt',       fwd: customFindSeries('ttfwd'),       rev: customFindSeries('ttrev'),       unit: 's' },
   { type: 'paired', id: 'noiselim', fwd: customFindSeries('noiselimfwd'), rev: customFindSeries('noiselimrev'), unit: '%' },
+  { type: 'paired', id: 'noise',    fwd: customFindSeries('noisefwd'),    rev: customFindSeries('noiserev'),    unit: '?' },
+  { type: 'paired', id: 'pwr1st',   fwd: customFindSeries('pwr1stfwd'),   rev: customFindSeries('pwr1strev'),   unit: '?' },
   { type: 'single', s: customFindSeries('STATUSp') },
 ];
 
@@ -5125,6 +5178,16 @@ function customToggleCell(seriesId, p) {
   renderCustomChart();
 }
 
+// Clears every current selection (matrix cells + global toggles) in one click.
+function customResetAllSelections() {
+  state.customCells.clear();
+  state.customGlobal.clear();
+  saveCustomMatrixState();
+  buildCustomGlobalToggles();
+  buildCustomMatrix();
+  renderCustomChart();
+}
+
 // ---- Fwd/Rev pair helpers ----
 function customPairAllOn(fwd, rev) {
   return state.detectedPaths.every(p => {
@@ -5175,6 +5238,13 @@ function buildCustomMatrix() {
   const headRow = document.createElement('tr');
   const corner = document.createElement('th');
   corner.className = 'corner';
+  const resetBtn = document.createElement('button');
+  resetBtn.type = 'button';
+  resetBtn.textContent = t('btn_reset_all');
+  resetBtn.title = t('tt_reset_all');
+  resetBtn.style.cssText = 'font-size:9px;padding:3px 6px;border-radius:4px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);cursor:pointer;font-weight:600;white-space:nowrap';
+  resetBtn.onclick = () => customResetAllSelections();
+  corner.appendChild(resetBtn);
   headRow.appendChild(corner);
   state.detectedPaths.forEach(p => {
     const th = document.createElement('th');
