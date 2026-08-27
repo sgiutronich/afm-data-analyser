@@ -1634,6 +1634,7 @@ const TRANSLATIONS = {
     dev_records:'Datensätze', dev_from:'Von', dev_to_lbl:'Bis',
     dev_paths:'Pfade', dev_interval:'Intervall',
     dev_monthly:'✓ Monats-Export', dev_choose:'⚙ Wahl-Export · imp→metrisch konv.',
+    dev_eu_locale:'⚙ EU-Format · Komma-Dezimal konv.',
     filter_all_months:'Alle Monate', filter_all_days:'Alle Tage',
     dev_device_label:'Gerät',
     inactive_lbl:'Inaktiv',
@@ -1794,6 +1795,7 @@ const TRANSLATIONS = {
     dev_records:'Records', dev_from:'From', dev_to_lbl:'To',
     dev_paths:'Paths', dev_interval:'Interval',
     dev_monthly:'✓ Monthly export', dev_choose:'⚙ Custom export · imp→metric conv.',
+    dev_eu_locale:'⚙ EU format · comma-decimal conv.',
     filter_all_months:'All Months', filter_all_days:'All Days',
     dev_device_label:'Device',
     inactive_lbl:'Inactive',
@@ -2013,6 +2015,24 @@ function detectAndNormalise(rawText) {
 
   // Detect "choose data" format: semicolon-delimited AND headers contain brackets
   const isChooseData = firstLine.includes(';') && /\[/.test(firstLine);
+
+  // Detect European-locale format: semicolon-delimited, comma as decimal separator
+  // (e.g. "2,550000" = 2.55). Seen on ARVUS exports configured for EU/Italian locale.
+  // Distinct from "choose data" — plain headers, no bracketed units, no imperial
+  // conversion. Left undetected, comma-decimals silently break numeric parsing
+  // throughout the app (isNaN("0,65") is true; parseFloat("0,65") truncates to 0).
+  if (!isChooseData && firstLine.includes(';')) {
+    const sampleLine = rawText.split('\n')[1] || '';
+    const looksLikeCommaDecimal = /;-?\d+,\d+/.test(sampleLine);
+    if (looksLikeCommaDecimal) {
+      const converted = rawText.split('\n').map(line => {
+        if (!line.trim()) return line;
+        return line.split(';').map(field => field.replace(/(-?\d+),(\d+)/g, '$1.$2')).join(',');
+      }).join('\n');
+      return { text: converted, format: 'eu_locale', converted: true };
+    }
+  }
+
   if (!isChooseData) return { text: rawText, format: 'monthly', converted: false };
 
   const lines = rawText.split('\n').filter(l => l.trim());
@@ -3424,6 +3444,8 @@ function processData() {
   const first = d[0], last = d[d.length - 1];
   const formatBadge = state.fileFormat === 'choose'
     ? `<div style="margin-top:5px;font-size:10px;background:#E8F5E9;color:#2E7D32;padding:2px 7px;border-radius:3px;font-weight:500">${t('dev_choose')}</div>`
+    : state.fileFormat === 'eu_locale'
+    ? `<div style="margin-top:5px;font-size:10px;background:#E3F2FD;color:#1565C0;padding:2px 7px;border-radius:3px;font-weight:500">${t('dev_eu_locale')}</div>`
     : '';
   document.getElementById('deviceCard').innerHTML = `
     <div class="device-card-title">Kanalis – ${state.filename.split('-')[0] || 'Gerät'}</div>
